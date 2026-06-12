@@ -1,0 +1,84 @@
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  transition: background .3s, box-shadow .3s, backdrop-filter .3s;
+}
+.nav--scrolled {
+  background: rgba(28,43,58,.96);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-nav);
+}
+
+.nav-inner {
+  max-width: 1240px; margin: 0 auto; padding: 0 28px;
+  height: 68px;
+  display: flex; align-items: center; gap: 0;
+}
+
+.nav-logo {
+  display: flex; align-items: center; gap: 9px;
+  color: var(--white); flex-shrink: 0; margin-right: auto;
+}
+.nav-logo-icon { color: var(--gold); }
+.nav-logo span { display: flex; flex-direction: column; line-height: 1; }
+.nav-logo-main {
+  font-family: 'Fraunces', serif;
+  font-size: 15px; font-weight: 700;
+  letter-spacing: .02em; color: var(--white);
+}
+.nav-logo-sub {
+  font-size: 9px; font-weight: 500;
+  letter-spacing: .14em; text-transform: uppercase;
+  color: var(--sand-lt); margin-top: 2px;
+}
+
+.nav-links {
+  display: flex; align-items: center; gap: 2px; list-style: none;
+}
+.nav-link {
+  display: block; padding: 7px 13px;
+  font-size: 14px; font-weight: 500;
+  color: rgba(255,255,255,.75);
+  border-radius: 6px;
+  transition: color .18s, background .18s;
+}
+.nav-link:hover { color: var(--white); background: rgba(255,255,255,.08); }
+
+.nav-cta {
+  display: inline-block;
+  margin-left: 10px; padding: 7px 18px;
+  background: var(--gold); color: var(--ink);
+  font-size: 13px; font-weight: 700;
+  border-radius: 30px;
+  transition: background .18s, transform .15s;
+}
+.nav-cta:hover { background: var(--gold-lt); transform: translateY(-1px); }
+
+.nav-right {
+  display: flex; align-items: center; gap: 4px; margin-left: 8px;
+}
+.nav-icon-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: none; border: none; color: rgba(255,255,255,.7);
+  display: flex; align-items: center; justify-content: center;
+  transition: background .18s, color .18s;
+}
+.nav-icon-btn:hover { background: rgba(255,255,255,.1); color: var(--white); }
+.nav-hamburger { display: none; }
+
+@media (max-width: 860px) {
+  .nav-hamburger { display: flex; }
+  .nav-links {
+    display: none;
+    position: fixed;
+    inset: 68px 0 0;
+    flex-direction: column; align-items: flex-start;
+    gap: 4px;
+    background: var(--ink);
+    padding: 20px 28px 32px;
+    overflow-y: auto;
+  }
+  .nav-links.is-open { display: flex; }
+  .nav-links li { width: 100%; }
+  .nav-link { padding: 12px 16px; font-size: 16px; border-radius: 8px; }
+  .nav-cta { margin-left: 0; margin-top: 8px; padding: 12px 20px; font-size: 15px; display: inline-block; }
+}

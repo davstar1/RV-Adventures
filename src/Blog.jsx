@@ -14,7 +14,11 @@ function PostCard({ post, big = false }) {
     <article className={`card ${big ? 'card--big' : ''}`}>
       <a href={`#${post.slug}`} className="card-img-link">
         <div className="card-img-wrap">
-          <img src={post.image} alt={post.title} loading="lazy" />
+          {post.image ? (
+            <img src={post.image} alt={post.title} loading="lazy" />
+          ) : (
+            <div className="card-img-empty">{post.category}</div>
+          )}
           <div className="card-img-badges">
             <span className="badge badge--cat">{post.category}</span>
             {post.tag && (
@@ -29,7 +33,11 @@ function PostCard({ post, big = false }) {
         </a>
         <p className="card-excerpt">{post.excerpt}</p>
         <div className="card-footer">
-          <img src={post.authorAvatar} alt={post.author} className="card-avatar" />
+          {post.authorAvatar ? (
+            <img src={post.authorAvatar} alt={post.author} className="card-avatar" />
+          ) : (
+            <span className="card-avatar card-avatar--initial">{String(post.author || 'O').slice(0, 1)}</span>
+          )}
           <div className="card-meta">
             <span className="card-author">{post.author}</span>
             <span className="card-secondary">
@@ -99,30 +107,24 @@ export default function Blog() {
           </div>
         </header>
 
-        {/* Leaderboard ad */}
-        <div className="ad-slot ad-leader blog-ad-top">
-          <span className="ad-dims">728 × 90</span>
-          <span className="ad-note">In-Content Leaderboard</span>
-        </div>
-
         <div className="blog-layout">
           {/* ── Main ── */}
           <main className="blog-main">
             {filtered[0] && <PostCard post={filtered[0]} big />}
 
-            {/* Inline ad */}
-            <div className="ad-slot ad-inline" style={{margin:'28px 0'}}>
-              <span className="ad-dims">Content Ad</span>
-              <span className="ad-note">Google AdSense / Custom Placement</span>
-            </div>
-
             <div className="cards-grid">
               {filtered.slice(1).map(p => <PostCard key={p.id} post={p} />)}
             </div>
 
-            <div style={{textAlign:'center', marginTop:48}}>
-              <button className="load-more">Load More Stories <ArrowRight size={15} /></button>
-            </div>
+            {filtered.length === 0 && (
+              <p className="blog-empty">Add your first story, review, or guide from the admin page.</p>
+            )}
+
+            {filtered.length > 6 && (
+              <div style={{textAlign:'center', marginTop:48}}>
+                <button className="load-more">Load More Stories <ArrowRight size={15} /></button>
+              </div>
+            )}
           </main>
 
           {/* ── Sidebar ── */}
@@ -141,45 +143,15 @@ export default function Blog() {
               <span className="sb-legal">No spam. Cancel anytime.</span>
             </div>
 
-            {/* Rectangle ad */}
-            <div className="sb-widget sb-ad">
-              <div className="ad-slot ad-rect">
-                <span className="ad-dims">300 × 250</span>
-                <span className="ad-note">Sidebar Rectangle</span>
-              </div>
-            </div>
-
             {/* Gear picks */}
             <div className="sb-widget">
               <div className="sb-widget-hd">
                 <h3>Gear We Actually Use</h3>
                 <span className="sb-disclosure">Affiliate</span>
               </div>
-              {gear.map(p => <AffCard key={p.id} p={p} />)}
-            </div>
-
-            {/* Second ad */}
-            <div className="sb-widget sb-ad">
-              <div className="ad-slot ad-rect">
-                <span className="ad-dims">300 × 250</span>
-                <span className="ad-note">Sidebar Rectangle #2</span>
-              </div>
-            </div>
-
-            {/* Most read */}
-            <div className="sb-widget">
-              <h3 className="sb-widget-title">Most Read</h3>
-              <ol className="most-read">
-                {[...posts].sort((a,b)=>b.likes-a.likes).slice(0,5).map((p,i)=>(
-                  <li key={p.id} className="mr-item">
-                    <span className="mr-num">{i+1}</span>
-                    <div>
-                      <a href={`#${p.slug}`} className="mr-title">{p.title}</a>
-                      <span className="mr-meta">{p.readTime} · ♥ {p.likes}</span>
-                    </div>
-                  </li>
-                ))}
-              </ol>
+              {gear.length > 0 ? gear.map(p => <AffCard key={p.id} p={p} />) : (
+                <p className="sb-empty">Add gear reviews in Admin to show your own picks here.</p>
+              )}
             </div>
           </aside>
         </div>

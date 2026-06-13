@@ -143,7 +143,10 @@
   font-weight: 700;
 }
 
-.vid-ad { height: 90px; }
+.vid-empty {
+  color: var(--muted);
+  font-weight: 800;
+}
 
 @media (max-width: 900px) {
   .vid-feature { grid-template-columns: 1fr; }

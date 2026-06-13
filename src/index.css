@@ -71,26 +71,3 @@ button { font-family: 'DM Sans', sans-serif; cursor: pointer; }
   transition: border-color .2s, background .2s;
 }
 .btn-ghost:hover { border-color: var(--white); background: rgba(255,255,255,.1); }
-
-/* ── ad slot base ── */
-.ad-slot {
-  background: linear-gradient(145deg, var(--ink) 0%, #253647 100%);
-  border: 1.5px dashed var(--sand);
-  border-radius: var(--r-md);
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  color: var(--sand-lt); gap: 4px;
-  position: relative; overflow: hidden;
-  font-family: 'DM Sans', sans-serif;
-}
-.ad-slot::after {
-  content: 'AD';
-  position: absolute; top: 7px; right: 10px;
-  font-size: 9px; letter-spacing: .12em;
-  opacity: .4; font-weight: 700;
-}
-.ad-slot .ad-dims { font-size: 17px; font-weight: 600; opacity: .85; }
-.ad-slot .ad-note { font-size: 11px; opacity: .55; }
-.ad-leader { width: 100%; height: 90px; }
-.ad-rect   { width: 300px; height: 250px; }
-.ad-inline { width: 100%; height: 100px; }

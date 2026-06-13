@@ -17,7 +17,12 @@
 .filter-pill:hover { border-color: var(--sand); color: var(--ink); }
 .filter-pill--on { background: var(--ink); color: var(--white); border-color: var(--ink); }
 
-.blog-ad-top { margin-bottom: 40px; }
+.blog-empty,
+.sb-empty {
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 700;
+}
 
 /* Layout */
 .blog-layout {
@@ -56,6 +61,19 @@
   width: 100%; height: 100%;
   object-fit: cover;
   transition: transform .45s ease;
+}
+.card-img-empty {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(145deg, var(--ink), var(--pine));
+  color: var(--sand-lt);
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  text-align: center;
+  padding: 20px;
 }
 .card:hover .card-img-wrap img { transform: scale(1.05); }
 
@@ -96,6 +114,16 @@
   width: 32px; height: 32px; border-radius: 50%;
   object-fit: cover; border: 2px solid var(--paper-dk);
   flex-shrink: 0;
+}
+.card-avatar--initial {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ink);
+  color: var(--gold);
+  font-size: 13px;
+  font-weight: 900;
+  text-transform: uppercase;
 }
 .card-meta { flex: 1; min-width: 0; }
 .card-author { font-size: 12px; font-weight: 600; color: var(--ink); display: block; }
@@ -167,7 +195,19 @@
   background: var(--white); border-radius: var(--r-md);
   padding: 18px 20px; box-shadow: var(--shadow-card);
 }
-.comment-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.comment-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ink);
+  color: var(--gold);
+  font-weight: 900;
+  text-transform: uppercase;
+}
 .comment-body { flex: 1; }
 .comment-head { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
 .comment-name { font-weight: 700; font-size: 14px; color: var(--ink); }
@@ -261,18 +301,6 @@
 .aff-rating { display: flex; align-items: center; gap: 3px; font-size: 12px; font-weight: 600; color: var(--gold); }
 .aff-rating em { font-style: normal; font-weight: 400; color: var(--muted); }
 .aff-buy { display: flex; align-items: center; gap: 3px; font-size: 12px; font-weight: 700; color: var(--ink); }
-.sb-ad { padding: 0; background: transparent; box-shadow: none; }
-
-/* Most read */
-.most-read { list-style: none; display: flex; flex-direction: column; gap: 14px; }
-.mr-item { display: flex; gap: 12px; align-items: flex-start; }
-.mr-num {
-  font-family: 'Fraunces', serif; font-size: 24px; font-weight: 900;
-  color: var(--paper-dk); line-height: 1; flex-shrink: 0; width: 24px;
-}
-.mr-title { font-size: 13px; font-weight: 600; color: var(--ink); display: block; margin-bottom: 3px; line-height: 1.35; transition: color .18s; }
-.mr-title:hover { color: var(--gold); }
-.mr-meta { font-size: 11px; color: var(--muted); }
 
 @media (max-width: 1060px) {
   .blog-layout { grid-template-columns: 1fr; }

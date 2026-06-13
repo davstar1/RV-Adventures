@@ -74,19 +74,12 @@
   padding: 4px 9px;
 }
 
-/* ── Ad bar ── */
-.hero-ad-bar {
-  position: relative; z-index: 2;
-  padding: 76px 28px 0;          /* clears fixed nav */
-  max-width: 1240px; margin: 0 auto; width: 100%;
-}
-
 /* ── Content ── */
 .hero-body {
   flex: 1;
   display: flex; align-items: center;
   position: relative; z-index: 2;
-  padding: 40px 0 120px;
+  padding: 118px 0 120px;
 }
 
 .hero-content { max-width: 620px; }
@@ -124,78 +117,7 @@
 
 .hero-actions {
   display: flex; gap: 14px; flex-wrap: wrap;
-  margin-bottom: 22px;
-}
-
-.hero-dashboard {
-  width: min(100%, 520px);
-  border: 1px solid rgba(255,255,255,.18);
-  border-radius: var(--r-md);
-  background: rgba(28,43,58,.58);
-  box-shadow: 0 18px 46px rgba(0,0,0,.24);
-  backdrop-filter: blur(14px);
-  padding: 14px;
-  margin-bottom: 36px;
-}
-
-.hero-dashboard-head,
-.hero-feature-link,
-.hero-stat-card {
-  display: flex;
-  align-items: center;
-}
-
-.hero-dashboard-head {
-  justify-content: space-between;
-  gap: 12px;
-  color: rgba(255,255,255,.86);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: .12em;
-  text-transform: uppercase;
-  margin-bottom: 10px;
-}
-
-.hero-dashboard-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.hero-stat-card {
-  min-height: 78px;
-  flex-direction: column;
-  justify-content: center;
-  gap: 3px;
-  border-radius: var(--r-sm);
-  background: rgba(255,255,255,.1);
-  color: rgba(255,255,255,.84);
-  transition: transform .2s, background .2s;
-}
-
-.hero-stat-card:hover {
-  transform: translateY(-2px);
-  background: rgba(232,137,12,.22);
-}
-
-.hero-stat-card strong {
-  font-family: 'Fraunces', serif;
-  color: var(--gold-lt);
-  font-size: 24px;
-  line-height: 1;
-}
-
-.hero-stat-card span {
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.hero-feature-link {
-  gap: 7px;
-  color: var(--gold-lt);
-  font-size: 13px;
-  font-weight: 800;
-  margin-top: 12px;
+  margin-bottom: 42px;
 }
 
 /* Trust stats */
@@ -248,7 +170,6 @@
   .hero-title { font-size: clamp(40px, 10vw, 60px); }
   .hero-lead { font-size: 16px; }
   .hero-trust { gap: 14px; }
-  .hero-dashboard-grid { grid-template-columns: 1fr; }
   .hero-map-pin,
   .hero-route-line { display: none; }
 }

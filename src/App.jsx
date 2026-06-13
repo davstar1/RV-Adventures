@@ -1,7 +1,7 @@
 import './index.css'
 import Navbar       from './Navbar'
 import Hero         from './Hero'
-import AdventurePicker from './AdventurePicker'
+import OwnerIntro   from './OwnerIntro'
 import Blog         from './Blog'
 import Destinations from './Destinations'
 import Videos       from './Videos'
@@ -28,7 +28,7 @@ export default function App() {
     <>
       <Navbar />
       <Hero />
-      <AdventurePicker />
+      <OwnerIntro />
       <Destinations />
       <Blog />
       <Videos />

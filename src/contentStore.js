@@ -1,10 +1,3 @@
-import {
-  affiliateProducts,
-  destinations,
-  posts,
-  sampleComments,
-  videos,
-} from './data';
 import { useEffect, useState } from 'react';
 import {
   deleteRemoteEntry,
@@ -23,6 +16,7 @@ const emptyContent = {
   destinations: [],
   gear: [],
   comments: [],
+  about: [],
 };
 
 const typeMap = {
@@ -31,6 +25,7 @@ const typeMap = {
   destinations: 'destination',
   gear: 'gear',
   comments: 'community',
+  about: 'about',
 };
 
 function readStoredContent() {
@@ -51,11 +46,12 @@ export function getContent() {
   const stored = readStoredContent();
 
   return {
-    posts: [...stored.posts, ...posts],
-    videos: [...stored.videos, ...videos],
-    destinations: [...stored.destinations, ...destinations],
-    gear: [...stored.gear, ...affiliateProducts],
-    comments: [...stored.comments, ...sampleComments],
+    posts: stored.posts,
+    videos: stored.videos,
+    destinations: stored.destinations,
+    gear: stored.gear,
+    comments: stored.comments,
+    about: stored.about,
     stored,
     remoteReady: false,
     storageMode: 'local',
@@ -92,14 +88,16 @@ export function useContent() {
           destinations: rows.filter(row => row.remoteType === typeMap.destinations),
           gear: rows.filter(row => row.remoteType === typeMap.gear),
           comments: rows.filter(row => row.remoteType === typeMap.comments),
+          about: rows.filter(row => row.remoteType === typeMap.about),
         };
 
         setContent({
-          posts: [...remote.posts, ...posts],
-          videos: [...remote.videos, ...videos],
-          destinations: [...remote.destinations, ...destinations],
-          gear: [...remote.gear, ...affiliateProducts],
-          comments: [...remote.comments, ...sampleComments],
+          posts: remote.posts,
+          videos: remote.videos,
+          destinations: remote.destinations,
+          gear: remote.gear,
+          comments: remote.comments,
+          about: remote.about,
           stored: remote,
           remoteReady: true,
           storageMode: 'supabase',

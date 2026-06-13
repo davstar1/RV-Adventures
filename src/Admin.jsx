@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   ArrowLeft,
   Camera,
+  UserRound,
   Lightbulb,
   Lock,
   LogOut,
@@ -37,6 +38,7 @@ import './Admin.css';
 
 const tabs = [
   { id: 'stories', label: 'Stories', icon: PenLine, store: 'posts' },
+  { id: 'about', label: 'About Us', icon: UserRound, store: 'about' },
   { id: 'reviews', label: 'Reviews', icon: Star, store: 'posts', category: 'Reviews' },
   { id: 'tips', label: 'Tips & Tricks', icon: Lightbulb, store: 'posts', category: 'Tips & Tricks' },
   { id: 'gear-mods', label: 'Gear & Mods', icon: Wrench, store: 'posts', category: 'Gear & Mods' },
@@ -66,6 +68,12 @@ const emptyForms = {
   reviews: { ...storyFormDefaults, category: 'Reviews' },
   tips: { ...storyFormDefaults, category: 'Tips & Tricks' },
   'gear-mods': { ...storyFormDefaults, category: 'Gear & Mods' },
+  about: {
+    title: '',
+    body: '',
+    image: '',
+    gallery: [],
+  },
   videos: {
     title: '',
     youtubeUrl: '',
@@ -269,6 +277,22 @@ function AdminForm({ active, form, setForm, onSave, isEditing }) {
     );
   }
 
+  if (active === 'about') {
+    return (
+      <div className="admin-form-grid">
+        <Field label="About section title">
+          <input value={form.title} placeholder="Meet the Open Road crew" onChange={e => patch({ title: e.target.value })} />
+        </Field>
+        <PhotoField label="Main about photo" value={form.image} onChange={image => patch({ image })} />
+        <Field label="About us story">
+          <textarea value={form.body} rows={7} placeholder="Write your story, why you travel, and what visitors can expect from the site." onChange={e => patch({ body: e.target.value })} />
+        </Field>
+        <PhotoGalleryField value={form.gallery} onChange={gallery => patch({ gallery })} />
+        <button className="admin-save" onClick={onSave}><Plus size={16} /> {actionLabel('About Section')}</button>
+      </div>
+    );
+  }
+
   if (active === 'destinations') {
     return (
       <div className="admin-form-grid">
@@ -382,6 +406,15 @@ function formFromEntry(active, entry) {
     };
   }
 
+  if (active === 'about') {
+    return {
+      title: entry.title || '',
+      body: entry.body || '',
+      image: entry.image || '',
+      gallery: Array.isArray(entry.gallery) ? entry.gallery : [],
+    };
+  }
+
   if (active === 'destinations') {
     return {
       name: entry.name || '',
@@ -423,9 +456,9 @@ function buildPayload(active, form) {
         tag: form.tag || null,
         title: form.title,
         excerpt: form.excerpt,
-        image: form.image || 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=900&q=80',
+        image: form.image || '',
         author: form.author || 'Open Road RV',
-        authorAvatar: `https://i.pravatar.cc/48?u=${encodeURIComponent(form.author || form.title)}`,
+        authorAvatar: '',
         date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
         readTime: form.readTime || '5 min',
         likes: 0,
@@ -451,6 +484,18 @@ function buildPayload(active, form) {
     };
   }
 
+  if (active === 'about') {
+    if (!form.title || !form.body) return { error: 'Add a title and about story first.' };
+    return {
+      payload: {
+        title: form.title,
+        body: form.body,
+        image: form.image || '',
+        gallery: Array.from(new Set([form.image, ...(form.gallery || [])].filter(Boolean))),
+      },
+    };
+  }
+
   if (active === 'destinations') {
     if (!form.name) return { error: 'Add a destination name first.' };
     const gallery = Array.from(new Set([form.image, ...(form.gallery || [])].filter(Boolean)));
@@ -458,7 +503,7 @@ function buildPayload(active, form) {
     return {
       payload: {
         name: form.name,
-        image: form.image || gallery[0] || 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=600&q=80',
+        image: form.image || gallery[0] || '',
         description: form.description || '',
         gallery,
         count: Number(form.count) || 1,
@@ -487,9 +532,9 @@ function buildPayload(active, form) {
   if (!form.name || !form.text) return { error: 'Add a name and community post first.' };
   return {
     payload: {
-      name: form.name,
-      avatar: `https://i.pravatar.cc/40?u=${encodeURIComponent(form.name)}`,
-      text: form.text,
+        name: form.name,
+        avatar: '',
+        text: form.text,
       time: 'Just now',
       likes: 0,
     },

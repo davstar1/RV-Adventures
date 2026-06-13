@@ -1,10 +1,17 @@
 create table if not exists public.content_entries (
   id uuid primary key default gen_random_uuid(),
-  type text not null check (type in ('story', 'video', 'destination', 'gear', 'community')),
+  type text not null check (type in ('story', 'video', 'destination', 'gear', 'community', 'about')),
   payload jsonb not null,
   created_at timestamptz not null default now(),
   created_by uuid references auth.users(id) default auth.uid()
 );
+
+alter table public.content_entries
+drop constraint if exists content_entries_type_check;
+
+alter table public.content_entries
+add constraint content_entries_type_check
+check (type in ('story', 'video', 'destination', 'gear', 'community', 'about'));
 
 alter table public.content_entries enable row level security;
 
@@ -20,6 +27,13 @@ on public.content_entries
 for insert
 to authenticated
 with check (auth.uid() = created_by);
+
+drop policy if exists "Public can add community notes" on public.content_entries;
+create policy "Public can add community notes"
+on public.content_entries
+for insert
+to anon
+with check (type = 'community');
 
 drop policy if exists "Signed in admins can delete own content entries" on public.content_entries;
 create policy "Signed in admins can delete own content entries"
@@ -40,6 +54,7 @@ create index if not exists content_entries_type_created_at_idx
 on public.content_entries (type, created_at desc);
 
 grant select on public.content_entries to anon;
+grant insert on public.content_entries to anon;
 grant select, insert, update, delete on public.content_entries to authenticated;
 
 create table if not exists public.newsletter_subscribers (

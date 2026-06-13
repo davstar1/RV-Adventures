@@ -76,6 +76,7 @@ export default function Videos() {
             </button>
           ))}
         </div>
+        {videos.length === 0 && <p className="vid-empty">Add your first YouTube video from the admin page.</p>}
 
         {openVideo && (
           <div className="vid-modal" role="dialog" aria-modal="true" aria-label={openVideo.title}>
@@ -108,12 +109,6 @@ export default function Videos() {
             </div>
           </div>
         )}
-
-        {/* Video section ad */}
-        <div className="ad-slot ad-inline vid-ad">
-          <span className="ad-dims">Pre/Mid-Roll Ad Placement</span>
-          <span className="ad-note">Video Ad or Banner</span>
-        </div>
       </div>
     </section>
   );

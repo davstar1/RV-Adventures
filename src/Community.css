@@ -41,6 +41,20 @@
   margin-bottom: 24px;
 }
 
+.community-section .comment-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ink);
+  color: var(--gold);
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
 @media (max-width: 860px) {
   .community-wrap {
     grid-template-columns: 1fr;

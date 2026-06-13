@@ -30,7 +30,7 @@ export default function Destinations() {
         <div className="dest-hd">
           <div>
             <span className="eyebrow">Where the Road Takes Us</span>
-            <h2 className="dest-heading">Explore by Destination</h2>
+            <h2 className="dest-heading">Places We’ve Explored</h2>
           </div>
           <a href="#all-destinations" className="dest-see-all">
             All destinations <ArrowRight size={15} />
@@ -40,7 +40,11 @@ export default function Destinations() {
         <div className="dest-grid">
           {destinations.map(d => (
             <button key={d.id} type="button" className="dest-card" onClick={() => openGallery(d)}>
-              <img src={d.image} alt={d.name} loading="lazy" />
+              {d.image ? (
+                <img src={d.image} alt={d.name} loading="lazy" />
+              ) : (
+                <div className="dest-card-empty">{d.name}</div>
+              )}
               <div className="dest-card-body">
                 <MapPin size={14} />
                 <span className="dest-name">{d.name}</span>
@@ -50,11 +54,9 @@ export default function Destinations() {
           ))}
         </div>
 
-        {/* Inline ad between sections */}
-        <div className="ad-slot ad-leader dest-ad">
-          <span className="ad-dims">728 × 90</span>
-          <span className="ad-note">Between-Sections Ad</span>
-        </div>
+        {destinations.length === 0 && (
+          <p className="dest-empty">Add your first destination from the admin page.</p>
+        )}
       </div>
 
       {openDestination && (
@@ -70,7 +72,11 @@ export default function Destinations() {
                   <ArrowLeft size={22} />
                 </button>
               )}
-              <img src={photos[photoIndex] || openDestination.image} alt={openDestination.name} />
+              {photos[photoIndex] || openDestination.image ? (
+                <img src={photos[photoIndex] || openDestination.image} alt={openDestination.name} />
+              ) : (
+                <div className="dest-gallery-empty">Add destination photos in Admin</div>
+              )}
               {photos.length > 1 && (
                 <button className="dest-gallery-arrow dest-gallery-arrow--right" type="button" onClick={showNext} aria-label="Next photo">
                   <ArrowRight size={22} />
@@ -80,7 +86,13 @@ export default function Destinations() {
             <div className="dest-modal-copy">
               <span><Images size={15} /> {photoIndex + 1} of {photos.length || 1}</span>
               <h3>{openDestination.name}</h3>
-              {openDestination.description && <p>{openDestination.description}</p>}
+              <div className="dest-modal-text">
+                {openDestination.description ? (
+                  <p>{openDestination.description}</p>
+                ) : (
+                  <p>Add a destination description in Admin to tell visitors what you saw, where you stayed, and what you would do again.</p>
+                )}
+              </div>
             </div>
           </div>
         </div>

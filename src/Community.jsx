@@ -1,29 +1,32 @@
 import { useState } from 'react';
 import { MessageCircle, Send } from 'lucide-react';
-import { addLocalContentItem, useContent } from './contentStore';
+import { addContentItem, useContent } from './contentStore';
 import './Community.css';
 
 export default function Community() {
   const { comments } = useContent();
   const [name, setName] = useState('');
   const [text, setText] = useState('');
-  const [submitted, setSubmitted] = useState(false);
+  const [status, setStatus] = useState('');
 
   const submit = async () => {
     if (!name.trim() || !text.trim()) return;
 
-    addLocalContentItem('comments', {
-      name: name.trim(),
-      avatar: `https://i.pravatar.cc/40?u=${name}`,
-      text: text.trim(),
-      time: 'Just now',
-      likes: 0,
-    });
-
-    setName('');
-    setText('');
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 3000);
+    try {
+      setStatus('Posting...');
+      await addContentItem('comments', {
+        name: name.trim(),
+        avatar: '',
+        text: text.trim(),
+        time: 'Just now',
+        likes: 0,
+      });
+      setName('');
+      setText('');
+      setStatus('Thanks for leaving a road note.');
+    } catch (error) {
+      setStatus(error.message);
+    }
   };
 
   return (
@@ -31,9 +34,9 @@ export default function Community() {
       <div className="section-wrap community-wrap">
         <div className="community-copy">
           <span className="eyebrow">Community Notes</span>
-          <h2 className="community-heading">Road-tested advice from readers</h2>
+          <h2 className="community-heading">Notes from visitors and the road</h2>
           <p className="community-lead">
-            Share a campground tip, ask a route question, or tell us what you learned on your last trip.
+            Share a campground tip, ask a route question, or leave a note about something you want me to cover next.
           </p>
           <div className="community-stat">
             <MessageCircle size={18} />
@@ -59,7 +62,7 @@ export default function Community() {
               maxLength={500}
             />
             <div className="comment-form-foot">
-              {submitted && <span className="comment-thanks">Thanks for commenting!</span>}
+              {status && <span className="comment-thanks">{status}</span>}
               <button className="comment-submit btn-primary" onClick={submit}>
                 <Send size={14} /> Post Comment
               </button>
@@ -69,7 +72,7 @@ export default function Community() {
           <div className="comment-list">
             {comments.map(c => (
               <div key={c.id} className="comment">
-                <img src={c.avatar} alt={c.name} className="comment-avatar" />
+                <div className="comment-avatar">{String(c.name || '?').slice(0, 1)}</div>
                 <div className="comment-body">
                   <div className="comment-head">
                     <span className="comment-name">{c.name}</span>

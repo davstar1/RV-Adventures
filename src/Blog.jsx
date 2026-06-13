@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Heart, MessageCircle, Clock, Star, ExternalLink, ArrowRight } from 'lucide-react';
 import { categories } from './data';
 import { useContent } from './contentStore';
+import NewsletterForm from './NewsletterForm';
 import './Blog.css';
 
 /* ── Post Card ── */
@@ -131,8 +132,12 @@ export default function Blog() {
               <span className="eyebrow">Free Newsletter</span>
               <h3>Best Routes, Weekly</h3>
               <p>Campground finds, gear deals, and road trip inspo straight to your inbox.</p>
-              <input type="email" className="sb-email" placeholder="your@email.com" />
-              <button className="btn-primary" style={{width:'100%',justifyContent:'center',marginTop:8}}>Subscribe Free</button>
+              <NewsletterForm
+                className="sb-newsletter-form"
+                inputClassName="sb-email"
+                buttonText="Subscribe Free"
+                source="blog-sidebar"
+              />
               <span className="sb-legal">No spam. Cancel anytime.</span>
             </div>
 

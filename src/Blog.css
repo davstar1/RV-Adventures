@@ -210,6 +210,20 @@
 }
 .sb-email::placeholder { color: rgba(255,255,255,.35); }
 .sb-email:focus { outline: none; border-color: var(--gold); background: rgba(255,255,255,.12); }
+.sb-newsletter-form {
+  display: grid;
+  gap: 8px;
+}
+.sb-newsletter-form .btn-primary {
+  width: 100%;
+  justify-content: center;
+}
+.sb-newsletter-form .newsletter-status {
+  color: rgba(255,255,255,.7);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
 .sb-legal { display: block; text-align: center; font-size: 11px; color: rgba(255,255,255,.3); margin-top: 8px; }
 
 /* Affiliate */

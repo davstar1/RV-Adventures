@@ -77,6 +77,8 @@ const emptyForms = {
   destinations: {
     name: '',
     image: '',
+    description: '',
+    gallery: [],
     count: '1',
   },
   gear: {
@@ -159,6 +161,48 @@ function PhotoField({ label, value, onChange }) {
   );
 }
 
+function PhotoGalleryField({ value = [], onChange }) {
+  const photos = Array.isArray(value) ? value : [];
+  const addPhotos = nextPhotos => onChange([...photos, ...nextPhotos.filter(Boolean)]);
+  const removePhoto = index => onChange(photos.filter((_, photoIndex) => photoIndex !== index));
+
+  return (
+    <div className="admin-gallery-field">
+      <Field label="Destination gallery photo URLs">
+        <textarea
+          value={photos.join('\n')}
+          rows={4}
+          placeholder="Paste one image URL per line"
+          onChange={e => onChange(e.target.value.split('\n').map(url => url.trim()).filter(Boolean))}
+        />
+      </Field>
+      <label className="admin-upload admin-gallery-upload">
+        <Camera size={16} />
+        Upload Multiple Photos
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={async e => {
+            const files = Array.from(e.target.files || []);
+            if (files.length) addPhotos(await Promise.all(files.map(readPhoto)));
+          }}
+        />
+      </label>
+      {photos.length > 0 && (
+        <div className="admin-gallery-preview">
+          {photos.map((photo, index) => (
+            <div className="admin-gallery-preview-item" key={`${photo}-${index}`}>
+              <img src={photo} alt="" />
+              <button type="button" onClick={() => removePhoto(index)}>Remove</button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function AdminForm({ active, form, setForm, onSave, isEditing }) {
   const patch = values => setForm(current => ({ ...current, ...values }));
   const actionLabel = label => isEditing ? `Update ${label}` : `Add ${label}`;
@@ -235,6 +279,10 @@ function AdminForm({ active, form, setForm, onSave, isEditing }) {
           <input type="number" min="1" value={form.count} onChange={e => patch({ count: e.target.value })} />
         </Field>
         <PhotoField label="Destination photo" value={form.image} onChange={image => patch({ image })} />
+        <Field label="Destination description">
+          <textarea value={form.description} rows={5} onChange={e => patch({ description: e.target.value })} />
+        </Field>
+        <PhotoGalleryField value={form.gallery} onChange={gallery => patch({ gallery })} />
         <button className="admin-save" onClick={onSave}><Plus size={16} /> {actionLabel('Destination')}</button>
       </div>
     );
@@ -338,6 +386,8 @@ function formFromEntry(active, entry) {
     return {
       name: entry.name || '',
       image: entry.image || '',
+      description: entry.description || '',
+      gallery: Array.isArray(entry.gallery) ? entry.gallery : [],
       count: String(entry.count || '1'),
     };
   }
@@ -403,10 +453,14 @@ function buildPayload(active, form) {
 
   if (active === 'destinations') {
     if (!form.name) return { error: 'Add a destination name first.' };
+    const gallery = Array.from(new Set([form.image, ...(form.gallery || [])].filter(Boolean)));
+
     return {
       payload: {
         name: form.name,
-        image: form.image || 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=600&q=80',
+        image: form.image || gallery[0] || 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=600&q=80',
+        description: form.description || '',
+        gallery,
         count: Number(form.count) || 1,
       },
     };

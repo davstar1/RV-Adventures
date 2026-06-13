@@ -1,4 +1,5 @@
 import { Compass, Play, Camera, Users, MessageCircle } from 'lucide-react';
+import NewsletterForm from './NewsletterForm';
 import './Footer.css';
 
 const links = {
@@ -18,10 +19,11 @@ export default function Footer() {
             <h3>Don't Miss a Single Adventure</h3>
             <p>Weekly road reports, campground finds, and gear deals — free.</p>
           </div>
-          <div className="footer-nl-form">
-            <input type="email" placeholder="your@email.com" className="footer-email" />
-            <button className="btn-primary">Subscribe</button>
-          </div>
+          <NewsletterForm
+            className="footer-nl-form"
+            inputClassName="footer-email"
+            source="footer"
+          />
         </div>
       </div>
 

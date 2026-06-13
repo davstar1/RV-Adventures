@@ -8,9 +8,18 @@
 .footer-nl-form { display: flex; gap: 10px; flex-shrink: 0; flex-wrap: wrap; }
 .footer-nl-form .newsletter-status {
   flex-basis: 100%;
-  color: rgba(255,255,255,.78);
+  border-radius: 999px;
+  background: rgba(255,255,255,.14);
+  color: var(--white);
+  padding: 7px 12px;
   font-size: 12px;
   font-weight: 700;
+}
+.footer-nl-form .newsletter-status--error {
+  background: rgba(224,92,92,.22);
+}
+.footer-nl-form .newsletter-status--success {
+  background: rgba(245,168,53,.24);
 }
 .footer-email {
   padding: 11px 18px; border-radius: 30px;

@@ -77,7 +77,11 @@ async function request(path, options = {}) {
   const body = text ? JSON.parse(text) : null;
 
   if (!response.ok) {
-    throw new Error(body?.msg || body?.message || body?.error_description || 'Supabase request failed.');
+    const message = body?.msg || body?.message || body?.error_description || 'Supabase request failed.';
+    if (message.toLowerCase().includes('duplicate')) {
+      throw new Error('This email is already subscribed.');
+    }
+    throw new Error(message);
   }
 
   return body;
@@ -206,9 +210,8 @@ export async function deleteRemoteEntry(id) {
 }
 
 export async function subscribeRemoteEmail(email, source = 'website') {
-  await publicRequest('/rest/v1/newsletter_subscribers?on_conflict=email', {
+  await publicRequest('/rest/v1/newsletter_subscribers', {
     method: 'POST',
-    headers: { Prefer: 'resolution=merge-duplicates' },
     body: JSON.stringify({
       email: email.toLowerCase(),
       source,

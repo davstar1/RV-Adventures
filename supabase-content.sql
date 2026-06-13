@@ -58,14 +58,6 @@ for insert
 to anon
 with check (true);
 
-drop policy if exists "Public can update newsletter subscription duplicates" on public.newsletter_subscribers;
-create policy "Public can update newsletter subscription duplicates"
-on public.newsletter_subscribers
-for update
-to anon
-using (true)
-with check (true);
-
 drop policy if exists "Signed in admins can read newsletter subscribers" on public.newsletter_subscribers;
 create policy "Signed in admins can read newsletter subscribers"
 on public.newsletter_subscribers
@@ -73,7 +65,7 @@ for select
 to authenticated
 using (true);
 
-grant insert, update on public.newsletter_subscribers to anon;
+grant insert on public.newsletter_subscribers to anon;
 grant select, insert on public.newsletter_subscribers to authenticated;
 
 notify pgrst, 'reload schema';

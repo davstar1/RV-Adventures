@@ -83,6 +83,31 @@ async function request(path, options = {}) {
   return body;
 }
 
+async function publicRequest(path, options = {}) {
+  if (!isSupabaseConfigured) {
+    throw new Error('Supabase is not configured.');
+  }
+
+  const response = await fetch(`${SUPABASE_URL}${path}`, {
+    ...options,
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      ...(options.headers || {}),
+    },
+  });
+
+  const text = await response.text();
+  const body = text ? JSON.parse(text) : null;
+
+  if (!response.ok) {
+    throw new Error(body?.msg || body?.message || body?.error_description || 'Supabase request failed.');
+  }
+
+  return body;
+}
+
 export function getAdminSession() {
   return readSession();
 }
@@ -177,5 +202,17 @@ export async function updateRemoteEntry(id, payload) {
 export async function deleteRemoteEntry(id) {
   await request(`/rest/v1/content_entries?id=eq.${encodeURIComponent(id)}`, {
     method: 'DELETE',
+  });
+}
+
+export async function subscribeRemoteEmail(email, source = 'website') {
+  await publicRequest('/rest/v1/newsletter_subscribers?on_conflict=email', {
+    method: 'POST',
+    headers: { Prefer: 'resolution=merge-duplicates' },
+    body: JSON.stringify({
+      email: email.toLowerCase(),
+      source,
+      subscribed_at: new Date().toISOString(),
+    }),
   });
 }

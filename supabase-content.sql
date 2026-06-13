@@ -42,4 +42,38 @@ on public.content_entries (type, created_at desc);
 grant select on public.content_entries to anon;
 grant select, insert, update, delete on public.content_entries to authenticated;
 
+create table if not exists public.newsletter_subscribers (
+  id uuid primary key default gen_random_uuid(),
+  email text not null unique,
+  source text not null default 'website',
+  subscribed_at timestamptz not null default now()
+);
+
+alter table public.newsletter_subscribers enable row level security;
+
+drop policy if exists "Public can subscribe to newsletter" on public.newsletter_subscribers;
+create policy "Public can subscribe to newsletter"
+on public.newsletter_subscribers
+for insert
+to anon
+with check (true);
+
+drop policy if exists "Public can update newsletter subscription duplicates" on public.newsletter_subscribers;
+create policy "Public can update newsletter subscription duplicates"
+on public.newsletter_subscribers
+for update
+to anon
+using (true)
+with check (true);
+
+drop policy if exists "Signed in admins can read newsletter subscribers" on public.newsletter_subscribers;
+create policy "Signed in admins can read newsletter subscribers"
+on public.newsletter_subscribers
+for select
+to authenticated
+using (true);
+
+grant insert, update on public.newsletter_subscribers to anon;
+grant select, insert on public.newsletter_subscribers to authenticated;
+
 notify pgrst, 'reload schema';

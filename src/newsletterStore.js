@@ -33,8 +33,9 @@ export async function subscribeEmail(email, source = 'website') {
 
   if (isSupabaseConfigured) {
     await subscribeRemoteEmail(normalized, source);
-    return;
+    return 'supabase';
   }
 
   saveLocalEmail(normalized, source);
+  return 'local';
 }

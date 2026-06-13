@@ -14,10 +14,15 @@ export default function NewsletterForm({ className = '', inputClassName = '', bu
     setLoading(true);
 
     try {
-      await subscribeEmail(email, source);
+      const mode = await subscribeEmail(email, source);
       setEmail('');
-      setStatus('Thanks, you are subscribed.');
-      setStatusType('success');
+      if (mode === 'supabase') {
+        setStatus('Thanks, you are subscribed.');
+        setStatusType('success');
+      } else {
+        setStatus('Saved on this browser only. Connect Supabase secrets in GitHub to collect live emails.');
+        setStatusType('error');
+      }
     } catch (error) {
       setStatus(error.message);
       setStatusType('error');

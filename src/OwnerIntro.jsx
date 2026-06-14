@@ -1,20 +1,59 @@
 import { useMemo, useState } from 'react';
-import { ArrowLeft, ArrowRight, Camera } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Camera, Play, X } from 'lucide-react';
 import { useContent } from './contentStore';
 import './OwnerIntro.css';
+
+function mediaFromProfile(profile) {
+  if (Array.isArray(profile?.media) && profile.media.length > 0) {
+    return profile.media.map(item => (
+      typeof item === 'string'
+        ? { type: 'image', src: item, description: '' }
+        : { type: item.type || 'image', src: item.src || item.url || '', description: item.description || '' }
+    )).filter(item => item.src);
+  }
+
+  return Array.from(new Set([
+    profile?.image,
+    ...(Array.isArray(profile?.gallery) ? profile.gallery : []),
+  ].filter(Boolean))).map(src => ({ type: 'image', src, description: '' }));
+}
+
+function MediaDisplay({ item, title, compact = false }) {
+  if (!item) {
+    return (
+      <div className="owner-gallery-empty">
+        <Camera size={34} />
+        <span>Add About photos in Admin</span>
+      </div>
+    );
+  }
+
+  if (item.type === 'video') {
+    return (
+      <div className="owner-video-wrap">
+        <video src={item.src} controls={compact} playsInline />
+        {!compact && (
+          <span className="owner-video-play">
+            <Play size={34} />
+          </span>
+        )}
+      </div>
+    );
+  }
+
+  return <img src={item.src} alt={title || 'Open Road RV Adventures'} />;
+}
 
 export default function OwnerIntro() {
   const { about } = useContent();
   const profile = about[0];
-  const photos = useMemo(() => Array.from(new Set([
-    profile?.image,
-    ...(Array.isArray(profile?.gallery) ? profile.gallery : []),
-  ].filter(Boolean))), [profile]);
+  const media = useMemo(() => mediaFromProfile(profile), [profile]);
   const [index, setIndex] = useState(0);
-  const current = photos[index] || '';
+  const [modalOpen, setModalOpen] = useState(false);
+  const current = media[index];
 
-  const previous = () => setIndex(currentIndex => (currentIndex - 1 + photos.length) % photos.length);
-  const next = () => setIndex(currentIndex => (currentIndex + 1) % photos.length);
+  const previous = () => setIndex(currentIndex => (currentIndex - 1 + media.length) % media.length);
+  const next = () => setIndex(currentIndex => (currentIndex + 1) % media.length);
 
   return (
     <section id="about" className="owner-section">
@@ -28,23 +67,46 @@ export default function OwnerIntro() {
         </div>
 
         <div className="owner-gallery" aria-label="About us photo viewer">
-          {current ? (
-            <img src={current} alt={profile?.title || 'Open Road RV Adventures'} />
-          ) : (
-            <div className="owner-gallery-empty">
-              <Camera size={34} />
-              <span>Add About photos in Admin</span>
-            </div>
+          <button
+            type="button"
+            className="owner-gallery-stage"
+            onClick={() => current && setModalOpen(true)}
+            disabled={!current}
+            aria-label="Open About media"
+          >
+            <MediaDisplay item={current} title={profile?.title} />
+          </button>
+          {current?.description && (
+            <p className="owner-media-caption">{current.description}</p>
           )}
-          {photos.length > 1 && (
+          {media.length > 1 && (
             <div className="owner-gallery-controls">
               <button type="button" onClick={previous} aria-label="Previous about photo"><ArrowLeft size={18} /></button>
-              <span>{index + 1} / {photos.length}</span>
+              <span>{index + 1} / {media.length}</span>
               <button type="button" onClick={next} aria-label="Next about photo"><ArrowRight size={18} /></button>
             </div>
           )}
         </div>
       </div>
+
+      {modalOpen && current && (
+        <div className="owner-modal" role="dialog" aria-modal="true" aria-label="About media viewer">
+          <button className="owner-modal-backdrop" type="button" onClick={() => setModalOpen(false)} aria-label="Close About media" />
+          <div className="owner-modal-panel">
+            <button className="owner-modal-close" type="button" onClick={() => setModalOpen(false)} aria-label="Close">
+              <X size={20} />
+            </button>
+            <div className="owner-modal-media">
+              <MediaDisplay item={current} title={profile?.title} compact />
+            </div>
+            <div className="owner-modal-copy">
+              <span className="eyebrow">About Us</span>
+              <h3>{profile?.title || 'A note from the road'}</h3>
+              <p>{current.description || 'Add a description for this photo or video in the About Us section of Admin.'}</p>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

@@ -73,6 +73,7 @@ const emptyForms = {
     body: '',
     image: '',
     gallery: [],
+    media: [],
   },
   videos: {
     title: '',
@@ -132,6 +133,8 @@ function readPhoto(file) {
     reader.readAsDataURL(file);
   });
 }
+
+const readMediaFile = readPhoto;
 
 function Field({ label, children }) {
   return (
@@ -203,6 +206,118 @@ function PhotoGalleryField({ value = [], onChange }) {
             <div className="admin-gallery-preview-item" key={`${photo}-${index}`}>
               <img src={photo} alt="" />
               <button type="button" onClick={() => removePhoto(index)}>Remove</button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AboutMediaField({ value = [], onChange }) {
+  const media = Array.isArray(value) ? value : [];
+  const addItem = item => onChange([...media, item]);
+  const updateItem = (index, patch) => onChange(media.map((item, itemIndex) => (
+    itemIndex === index ? { ...item, ...patch } : item
+  )));
+  const removeItem = index => onChange(media.filter((_, itemIndex) => itemIndex !== index));
+
+  return (
+    <div className="admin-gallery-field admin-about-media-field">
+      <div className="admin-media-add-row">
+        <button
+          type="button"
+          className="admin-upload"
+          onClick={() => addItem({ type: 'image', src: '', description: '' })}
+        >
+          <Camera size={16} /> Add Photo URL
+        </button>
+        <button
+          type="button"
+          className="admin-upload"
+          onClick={() => addItem({ type: 'video', src: '', description: '' })}
+        >
+          <Play size={16} /> Add Video URL
+        </button>
+        <label className="admin-upload">
+          <Camera size={16} />
+          Upload Photos
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={async e => {
+              const files = Array.from(e.target.files || []);
+              if (files.length) {
+                const uploaded = await Promise.all(files.map(async file => ({
+                  type: 'image',
+                  src: await readMediaFile(file),
+                  description: '',
+                })));
+                onChange([...media, ...uploaded]);
+              }
+            }}
+          />
+        </label>
+        <label className="admin-upload">
+          <Play size={16} />
+          Upload Videos
+          <input
+            type="file"
+            accept="video/*"
+            multiple
+            onChange={async e => {
+              const files = Array.from(e.target.files || []);
+              if (files.length) {
+                const uploaded = await Promise.all(files.map(async file => ({
+                  type: 'video',
+                  src: await readMediaFile(file),
+                  description: '',
+                })));
+                onChange([...media, ...uploaded]);
+              }
+            }}
+          />
+        </label>
+      </div>
+
+      {media.length === 0 ? (
+        <p className="admin-empty">Add About photos or videos here.</p>
+      ) : (
+        <div className="admin-about-media-list">
+          {media.map((item, index) => (
+            <div className="admin-about-media-item" key={`${item.src}-${index}`}>
+              <Field label={`Media ${index + 1} type`}>
+                <select value={item.type || 'image'} onChange={e => updateItem(index, { type: e.target.value })}>
+                  <option value="image">Photo</option>
+                  <option value="video">Video</option>
+                </select>
+              </Field>
+              <Field label="Media URL">
+                <input
+                  value={item.src || ''}
+                  placeholder={item.type === 'video' ? 'Paste a video URL' : 'Paste a photo URL'}
+                  onChange={e => updateItem(index, { src: e.target.value })}
+                />
+              </Field>
+              <Field label="Description">
+                <textarea
+                  value={item.description || ''}
+                  rows={3}
+                  placeholder="Write the caption or story for this photo/video."
+                  onChange={e => updateItem(index, { description: e.target.value })}
+                />
+              </Field>
+              <div className="admin-about-media-preview">
+                {item.type === 'video' && item.src ? (
+                  <video src={item.src} controls />
+                ) : item.src ? (
+                  <img src={item.src} alt="" />
+                ) : (
+                  <div className="admin-entry-thumb admin-entry-thumb--empty">{item.type === 'video' ? 'V' : 'P'}</div>
+                )}
+                <button type="button" onClick={() => removeItem(index)}>Remove</button>
+              </div>
             </div>
           ))}
         </div>
@@ -287,7 +402,7 @@ function AdminForm({ active, form, setForm, onSave, isEditing }) {
         <Field label="About us story">
           <textarea value={form.body} rows={7} placeholder="Write your story, why you travel, and what visitors can expect from the site." onChange={e => patch({ body: e.target.value })} />
         </Field>
-        <PhotoGalleryField value={form.gallery} onChange={gallery => patch({ gallery })} />
+        <AboutMediaField value={form.media} onChange={media => patch({ media })} />
         <button className="admin-save" onClick={onSave}><Plus size={16} /> {actionLabel('About Section')}</button>
       </div>
     );
@@ -382,6 +497,21 @@ function normalizeProductLink(value, fallback) {
   return `https://${link}`;
 }
 
+function mediaFromAboutEntry(entry) {
+  if (Array.isArray(entry.media)) {
+    return entry.media.map(item => (
+      typeof item === 'string'
+        ? { type: 'image', src: item, description: '' }
+        : { type: item.type || 'image', src: item.src || item.url || '', description: item.description || '' }
+    )).filter(item => item.src);
+  }
+
+  return Array.from(new Set([
+    entry.image,
+    ...(Array.isArray(entry.gallery) ? entry.gallery : []),
+  ].filter(Boolean))).map(src => ({ type: 'image', src, description: '' }));
+}
+
 function formFromEntry(active, entry) {
   if (isPostTab(active)) {
     return {
@@ -412,6 +542,7 @@ function formFromEntry(active, entry) {
       body: entry.body || '',
       image: entry.image || '',
       gallery: Array.isArray(entry.gallery) ? entry.gallery : [],
+      media: mediaFromAboutEntry(entry),
     };
   }
 
@@ -486,12 +617,26 @@ function buildPayload(active, form) {
 
   if (active === 'about') {
     if (!form.title || !form.body) return { error: 'Add a title and about story first.' };
+    const media = (form.media || [])
+      .map(item => ({
+        type: item.type === 'video' ? 'video' : 'image',
+        src: item.src || '',
+        description: item.description || '',
+      }))
+      .filter(item => item.src);
+    const legacyPhotos = Array.from(new Set([
+      form.image,
+      ...(form.gallery || []),
+    ].filter(Boolean))).map(src => ({ type: 'image', src, description: '' }));
+    const mergedMedia = [...media, ...legacyPhotos.filter(photo => !media.some(item => item.src === photo.src))];
+
     return {
       payload: {
         title: form.title,
         body: form.body,
-        image: form.image || '',
-        gallery: Array.from(new Set([form.image, ...(form.gallery || [])].filter(Boolean))),
+        image: form.image || mergedMedia.find(item => item.type === 'image')?.src || '',
+        gallery: mergedMedia.filter(item => item.type === 'image').map(item => item.src),
+        media: mergedMedia,
       },
     };
   }

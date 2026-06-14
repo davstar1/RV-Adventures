@@ -174,7 +174,7 @@ export async function insertRemoteEntry(type, payload) {
 
   const row = rows[0];
   if (!row) {
-    throw new Error('Update was not saved. Make sure Supabase allows signed-in admins to update content entries.');
+    throw new Error('Entry was not saved. Make sure Supabase allows signed-in admins to add content entries.');
   }
 
   return {
@@ -194,6 +194,10 @@ export async function updateRemoteEntry(id, payload) {
   });
 
   const row = rows[0];
+  if (!row) {
+    throw new Error('Entry was not updated. Make sure Supabase allows signed-in admins to update content entries.');
+  }
+
   return {
     ...row.payload,
     id: row.id,

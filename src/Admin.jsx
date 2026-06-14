@@ -512,6 +512,14 @@ function mediaFromAboutEntry(entry) {
   ].filter(Boolean))).map(src => ({ type: 'image', src, description: '' }));
 }
 
+function cleanAboutMediaItem(item) {
+  return {
+    type: item.type === 'video' ? 'video' : 'image',
+    src: String(item.src || '').trim(),
+    description: item.description || '',
+  };
+}
+
 function formFromEntry(active, entry) {
   if (isPostTab(active)) {
     return {
@@ -616,24 +624,25 @@ function buildPayload(active, form) {
   }
 
   if (active === 'about') {
-    if (!form.title || !form.body) return { error: 'Add a title and about story first.' };
     const media = (form.media || [])
-      .map(item => ({
-        type: item.type === 'video' ? 'video' : 'image',
-        src: item.src || '',
-        description: item.description || '',
-      }))
+      .map(cleanAboutMediaItem)
       .filter(item => item.src);
     const legacyPhotos = Array.from(new Set([
       form.image,
       ...(form.gallery || []),
-    ].filter(Boolean))).map(src => ({ type: 'image', src, description: '' }));
+    ].map(value => String(value || '').trim()).filter(Boolean))).map(src => ({ type: 'image', src, description: '' }));
     const mergedMedia = [...media, ...legacyPhotos.filter(photo => !media.some(item => item.src === photo.src))];
+    const title = form.title.trim() || 'A note from the road';
+    const body = form.body.trim();
+
+    if (!body && mergedMedia.length === 0) {
+      return { error: 'Add an About story, photo URL, or video URL first.' };
+    }
 
     return {
       payload: {
-        title: form.title,
-        body: form.body,
+        title,
+        body,
         image: form.image || mergedMedia.find(item => item.type === 'image')?.src || '',
         gallery: mergedMedia.filter(item => item.type === 'image').map(item => item.src),
         media: mergedMedia,

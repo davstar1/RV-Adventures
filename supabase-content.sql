@@ -44,12 +44,13 @@ to authenticated
 using (true);
 
 drop policy if exists "Signed in admins can update own content entries" on public.content_entries;
-create policy "Signed in admins can update own content entries"
+drop policy if exists "Signed in admins can update content entries" on public.content_entries;
+create policy "Signed in admins can update content entries"
 on public.content_entries
 for update
 to authenticated
-using (auth.uid() = created_by)
-with check (auth.uid() = created_by);
+using (true)
+with check (true);
 
 create index if not exists content_entries_type_created_at_idx
 on public.content_entries (type, created_at desc);

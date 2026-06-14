@@ -132,7 +132,7 @@
   height: min(720px, 92vh);
   overflow: hidden;
   border-radius: var(--r-lg);
-  background: var(--white);
+  background: var(--panel);
   box-shadow: 0 28px 90px rgba(0,0,0,.42);
 }
 
@@ -200,7 +200,7 @@
 }
 
 .dest-modal-copy h3 {
-  color: var(--ink);
+  color: var(--text);
   font-size: clamp(26px, 4vw, 42px);
   margin-bottom: 8px;
 }

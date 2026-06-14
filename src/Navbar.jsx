@@ -4,6 +4,7 @@ import './Navbar.css';
 
 const NAV = [
   { label: 'Home',         href: '#home' },
+  { label: 'About Us',     href: '#about' },
   { label: 'Destinations', href: '#destinations' },
   { label: 'Stories',      href: '#blog' },
   { label: 'Videos',       href: '#videos' },

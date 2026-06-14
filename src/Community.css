@@ -13,7 +13,7 @@
 .community-heading {
   font-size: clamp(30px, 4vw, 46px);
   font-weight: 700;
-  color: var(--ink);
+  color: var(--text);
   margin: 10px 0 16px;
 }
 

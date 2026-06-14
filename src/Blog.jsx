@@ -1,18 +1,18 @@
 import { useState } from 'react';
-import { Heart, MessageCircle, Clock, Star, ExternalLink, ArrowRight } from 'lucide-react';
+import { Heart, MessageCircle, Clock, Star, ExternalLink, ArrowRight, X } from 'lucide-react';
 import { categories } from './data';
 import { useContent } from './contentStore';
 import NewsletterForm from './NewsletterForm';
 import './Blog.css';
 
 /* ── Post Card ── */
-function PostCard({ post, big = false }) {
+function PostCard({ post, big = false, onOpen }) {
   const [liked, setLiked] = useState(false);
   const [count, setCount] = useState(post.likes);
 
   return (
     <article className={`card ${big ? 'card--big' : ''}`}>
-      <a href={`#${post.slug}`} className="card-img-link">
+      <button type="button" className="card-img-link" onClick={() => onOpen(post)}>
         <div className="card-img-wrap">
           {post.image ? (
             <img src={post.image} alt={post.title} loading="lazy" />
@@ -26,11 +26,11 @@ function PostCard({ post, big = false }) {
             )}
           </div>
         </div>
-      </a>
+      </button>
       <div className="card-body">
-        <a href={`#${post.slug}`}>
+        <button type="button" className="card-title-button" onClick={() => onOpen(post)}>
           <h3 className="card-title">{post.title}</h3>
-        </a>
+        </button>
         <p className="card-excerpt">{post.excerpt}</p>
         <div className="card-footer">
           {post.authorAvatar ? (
@@ -52,9 +52,9 @@ function PostCard({ post, big = false }) {
             >
               <Heart size={14} fill={liked ? 'currentColor' : 'none'} /> {count}
             </button>
-            <a href={`#${post.slug}-comments`} className="react-btn" aria-label="Comments">
+            <button type="button" className="react-btn" aria-label="Comments" onClick={() => onOpen(post)}>
               <MessageCircle size={14} /> {post.comments}
-            </a>
+            </button>
           </div>
         </div>
       </div>
@@ -84,6 +84,7 @@ function AffCard({ p }) {
 /* ── Main Blog Section ── */
 export default function Blog() {
   const [active, setActive] = useState('All');
+  const [openPost, setOpenPost] = useState(null);
   const { posts, gear } = useContent();
   const filtered = active === 'All' ? posts : posts.filter(p => p.category === active);
 
@@ -95,7 +96,7 @@ export default function Blog() {
           <span className="eyebrow">Fresh from the Road</span>
           <h2 className="blog-heading">Stories, Reviews & Guides</h2>
           <div className="filter-row">
-            {categories.map(c => (
+            {categories.filter(c => c !== 'Destinations').map(c => (
               <button
                 key={c}
                 className={`filter-pill ${active === c ? 'filter-pill--on' : ''}`}
@@ -110,10 +111,10 @@ export default function Blog() {
         <div className="blog-layout">
           {/* ── Main ── */}
           <main className="blog-main">
-            {filtered[0] && <PostCard post={filtered[0]} big />}
+            {filtered[0] && <PostCard post={filtered[0]} big onOpen={setOpenPost} />}
 
             <div className="cards-grid">
-              {filtered.slice(1).map(p => <PostCard key={p.id} post={p} />)}
+              {filtered.slice(1).map(p => <PostCard key={p.id} post={p} onOpen={setOpenPost} />)}
             </div>
 
             {filtered.length === 0 && (
@@ -156,6 +157,36 @@ export default function Blog() {
           </aside>
         </div>
       </div>
+
+      {openPost && (
+        <div className="story-modal" role="dialog" aria-modal="true" aria-label={openPost.title}>
+          <button className="story-modal-backdrop" type="button" onClick={() => setOpenPost(null)} aria-label="Close story" />
+          <div className="story-modal-panel">
+            <button className="story-modal-close" type="button" onClick={() => setOpenPost(null)} aria-label="Close">
+              <X size={20} />
+            </button>
+            <div className="story-modal-image">
+              {openPost.image ? (
+                <img src={openPost.image} alt={openPost.title} />
+              ) : (
+                <div className="card-img-empty">{openPost.category}</div>
+              )}
+            </div>
+            <div className="story-modal-copy">
+              <span className="story-modal-kicker">{openPost.category}</span>
+              <h3>{openPost.title}</h3>
+              <div className="story-modal-meta">
+                <span>{openPost.author || 'Open Road RV'}</span>
+                <span>{openPost.date}</span>
+                <span><Clock size={13} /> {openPost.readTime}</span>
+              </div>
+              <div className="story-modal-text">
+                <p>{openPost.excerpt || 'Add more story text in Admin so visitors can read the full entry here.'}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

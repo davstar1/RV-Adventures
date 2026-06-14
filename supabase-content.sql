@@ -36,11 +36,12 @@ to anon
 with check (type = 'community');
 
 drop policy if exists "Signed in admins can delete own content entries" on public.content_entries;
-create policy "Signed in admins can delete own content entries"
+drop policy if exists "Signed in admins can delete content entries" on public.content_entries;
+create policy "Signed in admins can delete content entries"
 on public.content_entries
 for delete
 to authenticated
-using (auth.uid() = created_by);
+using (true);
 
 drop policy if exists "Signed in admins can update own content entries" on public.content_entries;
 create policy "Signed in admins can update own content entries"

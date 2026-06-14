@@ -542,15 +542,19 @@ function buildPayload(active, form) {
 }
 
 function EntryList({ active, entries, onEdit, onDelete }) {
+  const isCommunity = active === 'community';
+  const tabLabel = tabs.find(tab => tab.id === active)?.label;
+  const entryLabel = isCommunity ? 'visitor comments' : 'admin entries';
+
   return (
     <div className="admin-entry-list">
       <div className="admin-entry-list-head">
-        <h3>Saved {tabs.find(tab => tab.id === active)?.label}</h3>
-        <span>{entries.length} admin entries</span>
+        <h3>{isCommunity ? 'Community Comments' : `Saved ${tabLabel}`}</h3>
+        <span>{entries.length} {entryLabel}</span>
       </div>
 
       {entries.length === 0 ? (
-        <p className="admin-empty">No admin-created entries yet.</p>
+        <p className="admin-empty">{isCommunity ? 'No community comments yet.' : 'No admin-created entries yet.'}</p>
       ) : (
         <div className="admin-entry-items">
           {entries.map(entry => (
@@ -568,10 +572,10 @@ function EntryList({ active, entries, onEdit, onDelete }) {
                 {active === 'community' && <p>{entry.text}</p>}
               </div>
               <div className="admin-entry-actions">
-                <button className="admin-edit" onClick={() => onEdit(entry)} aria-label={`Edit ${titleForEntry(entry)}`}>
+                <button type="button" className="admin-edit" onClick={() => onEdit(entry)} aria-label={`Edit ${titleForEntry(entry)}`}>
                   <PenLine size={15} /> Edit
                 </button>
-                <button className="admin-delete" onClick={() => onDelete(entry.id)} aria-label={`Delete ${titleForEntry(entry)}`}>
+                <button type="button" className="admin-delete" onClick={() => onDelete(entry.id)} aria-label={`Delete ${titleForEntry(entry)}`}>
                   <Trash2 size={15} /> Delete
                 </button>
               </div>
@@ -689,6 +693,9 @@ export default function Admin() {
   }));
 
   const removeEntry = async id => {
+    const confirmed = window.confirm('Delete this entry from the site?');
+    if (!confirmed) return;
+
     try {
       await deleteContentItem(activeTab.store, id);
       if (editingId === id) {

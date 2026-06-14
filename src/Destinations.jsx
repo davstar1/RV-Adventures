@@ -46,9 +46,14 @@ export default function Destinations() {
                 <div className="dest-card-empty">{d.name}</div>
               )}
               <div className="dest-card-body">
-                <MapPin size={14} />
-                <span className="dest-name">{d.name}</span>
-                <span className="dest-count">{d.count} guides</span>
+                <div className="dest-card-title">
+                  <MapPin size={14} />
+                  <span className="dest-name">{d.name}</span>
+                  <span className="dest-count">{d.count} guides</span>
+                </div>
+                {d.description && (
+                  <p className="dest-card-description">{d.description}</p>
+                )}
               </div>
             </button>
           ))}

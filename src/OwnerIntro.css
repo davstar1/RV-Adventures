@@ -167,6 +167,7 @@
 }
 
 .owner-modal-media {
+  position: relative;
   min-height: 0;
   height: 100%;
   background: #000;
@@ -178,6 +179,31 @@
   height: 100%;
   min-height: 0;
   object-fit: contain;
+}
+
+.owner-modal-arrow {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(21,35,49,.84);
+  color: var(--white);
+  box-shadow: var(--shadow-card);
+  transform: translateY(-50%);
+}
+
+.owner-modal-arrow--left {
+  left: 16px;
+}
+
+.owner-modal-arrow--right {
+  right: 16px;
 }
 
 .owner-modal-copy {

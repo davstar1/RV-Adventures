@@ -95,6 +95,16 @@ export default function OwnerIntro() {
             </button>
             <div className="owner-modal-media">
               <MediaDisplay item={current} title={profile?.title} compact />
+              {media.length > 1 && (
+                <>
+                  <button type="button" className="owner-modal-arrow owner-modal-arrow--left" onClick={previous} aria-label="Previous About media">
+                    <ArrowLeft size={22} />
+                  </button>
+                  <button type="button" className="owner-modal-arrow owner-modal-arrow--right" onClick={next} aria-label="Next About media">
+                    <ArrowRight size={22} />
+                  </button>
+                </>
+              )}
             </div>
             <div className="owner-modal-copy">
               <span className="eyebrow">About Us</span>

@@ -78,6 +78,17 @@
   gap: 18px;
 }
 
+.admin-auth-card--login {
+  margin-top: 90px;
+  gap: 16px;
+}
+
+.admin-auth-card--login > .eyebrow {
+  align-self: center;
+  text-align: center;
+  margin-bottom: 4px;
+}
+
 .admin-auth-card h1 {
   color: #f7f2e8;
   font-size: clamp(30px, 5vw, 46px);

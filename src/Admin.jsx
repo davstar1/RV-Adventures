@@ -794,11 +794,8 @@ function AdminSignIn({ onSignedIn }) {
   return (
     <main id="admin" className="admin-page">
       <div className="section-wrap admin-wrap">
-        <BackToSiteButton />
-        <form className="admin-auth-card" onSubmit={submit}>
+        <form className="admin-auth-card admin-auth-card--login" onSubmit={submit}>
           <span className="eyebrow">Admin Login</span>
-          <h1>Sign in to manage content</h1>
-          <p>Use the admin user you create in Supabase Authentication.</p>
           <Field label="Email">
             <input type="email" value={email} onChange={e => setEmail(e.target.value)} autoComplete="username" required />
           </Field>

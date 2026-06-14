@@ -74,24 +74,6 @@
   background: rgba(0,0,0,.2);
 }
 
-.owner-media-caption {
-  position: absolute;
-  left: 18px;
-  right: 18px;
-  bottom: 76px;
-  max-height: 96px;
-  overflow: hidden;
-  color: var(--white);
-  background: rgba(21,35,49,.72);
-  border: 1px solid rgba(255,255,255,.16);
-  border-radius: var(--r-sm);
-  padding: 10px 12px;
-  font-size: 13px;
-  line-height: 1.45;
-  text-align: left;
-  white-space: pre-line;
-}
-
 .owner-gallery-empty {
   min-height: 380px;
   display: grid;

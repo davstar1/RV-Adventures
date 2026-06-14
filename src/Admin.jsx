@@ -548,8 +548,8 @@ function formFromEntry(active, entry) {
     return {
       title: entry.title || '',
       body: entry.body || '',
-      image: entry.image || '',
-      gallery: Array.isArray(entry.gallery) ? entry.gallery : [],
+      image: '',
+      gallery: [],
       media: mediaFromAboutEntry(entry),
     };
   }
@@ -627,11 +627,10 @@ function buildPayload(active, form) {
     const media = (form.media || [])
       .map(cleanAboutMediaItem)
       .filter(item => item.src);
-    const legacyPhotos = Array.from(new Set([
-      form.image,
-      ...(form.gallery || []),
-    ].map(value => String(value || '').trim()).filter(Boolean))).map(src => ({ type: 'image', src, description: '' }));
-    const mergedMedia = [...media, ...legacyPhotos.filter(photo => !media.some(item => item.src === photo.src))];
+    const fallbackPhoto = String(form.image || '').trim();
+    const mergedMedia = media.length > 0
+      ? media
+      : (fallbackPhoto ? [{ type: 'image', src: fallbackPhoto, description: '' }] : []);
     const title = form.title.trim() || 'A note from the road';
     const body = form.body.trim();
 

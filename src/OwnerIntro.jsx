@@ -76,9 +76,6 @@ export default function OwnerIntro() {
           >
             <MediaDisplay item={current} title={profile?.title} />
           </button>
-          {current?.description && (
-            <p className="owner-media-caption">{current.description}</p>
-          )}
           {media.length > 1 && (
             <div className="owner-gallery-controls">
               <button type="button" onClick={previous} aria-label="Previous about photo"><ArrowLeft size={18} /></button>

@@ -6,7 +6,7 @@ const NAV = [
   { label: 'Home',         href: '#home' },
   { label: 'About Us',     href: '#about' },
   { label: 'Destinations', href: '#destinations' },
-  { label: 'Stories',      href: '#blog' },
+  { label: 'Reviews & Guides', href: '#blog' },
   { label: 'Videos',       href: '#videos' },
   { label: 'Gear',         href: '#gear' },
   { label: 'Community',    href: '#community' },

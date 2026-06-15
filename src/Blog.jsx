@@ -94,7 +94,7 @@ export default function Blog() {
 
         <header className="blog-header">
           <span className="eyebrow">Fresh from the Road</span>
-          <h2 className="blog-heading">Stories, Reviews & Guides</h2>
+          <h2 className="blog-heading">Reviews & Guides</h2>
           <div className="filter-row">
             {categories.filter(c => c !== 'Destinations').map(c => (
               <button

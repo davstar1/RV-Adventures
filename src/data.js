@@ -1,6 +1,6 @@
 export const posts = [];
 
-export const categories = ['All', 'Destinations', 'Gear & Mods', 'Full-Time RV', 'Reviews', 'Tips & Tricks'];
+export const categories = ['All', 'Stories', 'Destinations', 'Favorite Campgrounds', 'Gear & Mods', 'Full-Time RV', 'Reviews', 'Tips & Tricks'];
 
 export const affiliateProducts = [];
 

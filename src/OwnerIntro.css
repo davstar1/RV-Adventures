@@ -7,7 +7,7 @@
   display: grid;
   grid-template-columns: minmax(0, .9fr) minmax(320px, 1.1fr);
   gap: 48px;
-  align-items: center;
+  align-items: start;
 }
 
 .owner-copy h2 {
@@ -28,6 +28,7 @@
   position: relative;
   overflow: hidden;
   min-height: 380px;
+  margin-top: 31px;
   border-radius: var(--r-lg);
   background: var(--ink);
   box-shadow: var(--shadow-hover);
@@ -251,6 +252,10 @@
 @media (max-width: 820px) {
   .owner-wrap {
     grid-template-columns: 1fr;
+  }
+
+  .owner-gallery {
+    margin-top: 0;
   }
 
   .owner-modal {

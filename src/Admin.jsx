@@ -37,7 +37,7 @@ import {
 import './Admin.css';
 
 const tabs = [
-  { id: 'stories', label: 'Stories', icon: PenLine, store: 'posts' },
+  { id: 'stories', label: 'Reviews & Guides', icon: PenLine, store: 'posts' },
   { id: 'about', label: 'About Us', icon: UserRound, store: 'about' },
   { id: 'reviews', label: 'Reviews', icon: Star, store: 'posts', category: 'Reviews' },
   { id: 'tips', label: 'Tips & Tricks', icon: Lightbulb, store: 'posts', category: 'Tips & Tricks' },

@@ -258,6 +258,14 @@
     margin-top: 0;
   }
 
+  .owner-gallery-controls {
+    justify-content: space-between;
+  }
+
+  .owner-gallery-controls span {
+    display: none;
+  }
+
   .owner-modal {
     padding: 14px;
   }

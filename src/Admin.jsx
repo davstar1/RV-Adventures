@@ -534,13 +534,22 @@ function cleanAboutMediaItem(item) {
 
 function formFromEntry(active, entry) {
   if (isPostTab(active)) {
+    const mainImage = String(entry.image || '').trim();
+    const additionalPhotos = Array.isArray(entry.gallery)
+      ? Array.from(new Set(
+          entry.gallery
+            .map(photo => String(photo || '').trim())
+            .filter(photo => photo && photo !== mainImage),
+        ))
+      : [];
+
     return {
       title: entry.title || '',
       category: activeTabFor(active).category || entry.category || 'Destinations',
       tag: entry.tag || '',
       excerpt: entry.excerpt || '',
-      image: entry.image || '',
-      gallery: Array.isArray(entry.gallery) ? entry.gallery : [],
+      image: mainImage,
+      gallery: additionalPhotos,
       author: entry.author || '',
       readTime: entry.readTime || '',
     };

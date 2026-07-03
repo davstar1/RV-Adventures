@@ -164,10 +164,13 @@
   background: var(--ink);
 }
 
-.dest-gallery-stage img {
+.dest-gallery-stage img,
+.dest-gallery-stage video,
+.dest-gallery-stage iframe {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  border: 0;
 }
 
 .dest-gallery-arrow {

@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Heart, MessageCircle, Clock, Star, ExternalLink, ArrowLeft, ArrowRight, X } from 'lucide-react';
 import { categories } from './data';
-import { useContent } from './contentStore';
+import { useContent, youtubeIdFromUrl } from './contentStore';
 import NewsletterForm from './NewsletterForm';
 import './Blog.css';
 
@@ -81,6 +81,25 @@ function AffCard({ p }) {
   );
 }
 
+function StoryMedia({ item, title }) {
+  if (!item) return <div className="card-img-empty">No media</div>;
+  if (item.type === 'image') return <img src={item.src} alt={title} />;
+
+  const youtubeId = youtubeIdFromUrl(item.src);
+  if (youtubeId) {
+    return (
+      <iframe
+        src={`https://www.youtube.com/embed/${youtubeId}`}
+        title={title}
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+      />
+    );
+  }
+
+  return <video src={item.src} controls playsInline />;
+}
+
 /* ── Main Blog Section ── */
 export default function Blog() {
   const [active, setActive] = useState('All');
@@ -88,16 +107,42 @@ export default function Blog() {
   const [photoIndex, setPhotoIndex] = useState(0);
   const { posts, gear } = useContent();
   const filtered = active === 'All' ? posts : posts.filter(p => p.category === active);
-  const openPhotos = openPost ? Array.from(new Set([
-    openPost.image,
-    ...(Array.isArray(openPost.gallery) ? openPost.gallery : []),
-  ].filter(Boolean))) : [];
+  const openMedia = openPost ? [
+    ...Array.from(new Set([
+      openPost.image,
+      ...(Array.isArray(openPost.gallery) ? openPost.gallery : []),
+    ].filter(Boolean))).map(src => ({ type: 'image', src })),
+    ...Array.from(new Set(
+      (Array.isArray(openPost.videoUrls) ? openPost.videoUrls : []).filter(Boolean),
+    )).map(src => ({ type: 'video', src })),
+  ] : [];
   const openStory = post => {
     setOpenPost(post);
     setPhotoIndex(0);
   };
-  const previousPhoto = () => setPhotoIndex(current => (current - 1 + openPhotos.length) % openPhotos.length);
-  const nextPhoto = () => setPhotoIndex(current => (current + 1) % openPhotos.length);
+  const previousPhoto = () => setPhotoIndex(current => (current - 1 + openMedia.length) % openMedia.length);
+  const nextPhoto = () => setPhotoIndex(current => (current + 1) % openMedia.length);
+
+  useEffect(() => {
+    if (!openPost) return undefined;
+
+    const handleKeyDown = event => {
+      if (['INPUT', 'TEXTAREA', 'SELECT', 'VIDEO'].includes(event.target?.tagName)) return;
+      if (event.key === 'Escape') setOpenPost(null);
+      if (openMedia.length < 2) return;
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        setPhotoIndex(current => (current - 1 + openMedia.length) % openMedia.length);
+      }
+      if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        setPhotoIndex(current => (current + 1) % openMedia.length);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [openPost, openMedia.length]);
 
   return (
     <section id="blog" className="blog-section">
@@ -177,12 +222,8 @@ export default function Blog() {
               <X size={20} />
             </button>
             <div className="story-modal-image">
-              {openPhotos[photoIndex] ? (
-                <img src={openPhotos[photoIndex]} alt={openPost.title} />
-              ) : (
-                <div className="card-img-empty">{openPost.category}</div>
-              )}
-              {openPhotos.length > 1 && (
+              <StoryMedia item={openMedia[photoIndex]} title={openPost.title} />
+              {openMedia.length > 1 && (
                 <>
                   <button type="button" className="story-modal-arrow story-modal-arrow--left" onClick={previousPhoto} aria-label="Previous photo">
                     <ArrowLeft size={22} />
@@ -196,7 +237,7 @@ export default function Blog() {
             <div className="story-modal-copy">
               <span className="story-modal-kicker">{openPost.category}</span>
               <h3>{openPost.title}</h3>
-              {openPhotos.length > 1 && <span className="story-modal-photo-count">{photoIndex + 1} of {openPhotos.length}</span>}
+              {openMedia.length > 1 && <span className="story-modal-photo-count">{photoIndex + 1} of {openMedia.length}</span>}
               <div className="story-modal-meta">
                 <span>{openPost.author || 'Open Road RV'}</span>
                 <span>{openPost.date}</span>

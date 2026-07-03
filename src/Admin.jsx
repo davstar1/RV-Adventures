@@ -60,6 +60,7 @@ const storyFormDefaults = {
   excerpt: '',
   image: '',
   gallery: [],
+  videoUrls: [],
   author: '',
   readTime: '',
 };
@@ -89,6 +90,7 @@ const emptyForms = {
     image: '',
     description: '',
     gallery: [],
+    videoUrls: [],
     count: '1',
   },
   gear: {
@@ -101,6 +103,7 @@ const emptyForms = {
     desc: '',
     badge: 'Road Tested',
     link: '',
+    videoUrls: [],
     emoji: '★',
   },
   community: {
@@ -217,6 +220,23 @@ function PhotoGalleryField({ value = [], onChange, label = 'Destination gallery 
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function VideoUrlField({ value = [], onChange, label = 'Video URLs' }) {
+  const urls = Array.isArray(value) ? value : [];
+
+  return (
+    <div className="admin-gallery-field">
+      <Field label={label}>
+        <textarea
+          value={urls.join('\n')}
+          rows={4}
+          placeholder="Paste one YouTube or direct video URL per line"
+          onChange={e => onChange(e.target.value.split('\n'))}
+        />
+      </Field>
     </div>
   );
 }
@@ -372,6 +392,11 @@ function AdminForm({ active, form, setForm, onSave, isEditing }) {
           value={form.gallery}
           onChange={gallery => patch({ gallery })}
         />
+        <VideoUrlField
+          label={`${postLabel} video URLs`}
+          value={form.videoUrls}
+          onChange={videoUrls => patch({ videoUrls })}
+        />
         <Field label="Excerpt">
           <textarea value={form.excerpt} rows={5} onChange={e => patch({ excerpt: e.target.value })} />
         </Field>
@@ -434,6 +459,7 @@ function AdminForm({ active, form, setForm, onSave, isEditing }) {
           <textarea value={form.description} rows={5} onChange={e => patch({ description: e.target.value })} />
         </Field>
         <PhotoGalleryField value={form.gallery} onChange={gallery => patch({ gallery })} />
+        <VideoUrlField value={form.videoUrls} onChange={videoUrls => patch({ videoUrls })} />
         <button className="admin-save" onClick={onSave}><Plus size={16} /> {actionLabel('Destination')}</button>
       </div>
     );
@@ -466,6 +492,7 @@ function AdminForm({ active, form, setForm, onSave, isEditing }) {
         <Field label="Shop button link">
           <input value={form.link} placeholder="https://example.com/product" onChange={e => patch({ link: e.target.value })} />
         </Field>
+        <VideoUrlField label="Gear video URLs" value={form.videoUrls} onChange={videoUrls => patch({ videoUrls })} />
         <Field label="Icon">
           <input value={form.emoji} maxLength={2} onChange={e => patch({ emoji: e.target.value })} />
         </Field>
@@ -532,6 +559,14 @@ function cleanAboutMediaItem(item) {
   };
 }
 
+function cleanUrlList(values) {
+  return Array.from(new Set(
+    (Array.isArray(values) ? values : [])
+      .map(value => String(value || '').trim())
+      .filter(Boolean),
+  ));
+}
+
 function formFromEntry(active, entry) {
   if (isPostTab(active)) {
     const mainImage = String(entry.image || '').trim();
@@ -550,6 +585,7 @@ function formFromEntry(active, entry) {
       excerpt: entry.excerpt || '',
       image: mainImage,
       gallery: additionalPhotos,
+      videoUrls: cleanUrlList(entry.videoUrls),
       author: entry.author || '',
       readTime: entry.readTime || '',
     };
@@ -582,6 +618,7 @@ function formFromEntry(active, entry) {
       image: entry.image || '',
       description: entry.description || '',
       gallery: Array.isArray(entry.gallery) ? entry.gallery : [],
+      videoUrls: cleanUrlList(entry.videoUrls),
       count: String(entry.count || '1'),
     };
   }
@@ -597,6 +634,7 @@ function formFromEntry(active, entry) {
       desc: entry.desc || '',
       badge: entry.badge || 'Road Tested',
       link: entry.link || '',
+      videoUrls: cleanUrlList(entry.videoUrls),
       emoji: entry.emoji || '★',
     };
   }
@@ -615,6 +653,7 @@ function buildPayload(active, form) {
         .map(value => String(value || '').trim())
         .filter(Boolean),
     ));
+    const videoUrls = cleanUrlList(form.videoUrls);
     return {
       payload: {
         slug: slugify(form.title),
@@ -624,6 +663,7 @@ function buildPayload(active, form) {
         excerpt: form.excerpt,
         image: form.image || gallery[0] || '',
         gallery,
+        videoUrls,
         author: form.author || 'Open Road RV',
         authorAvatar: '',
         date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
@@ -680,6 +720,7 @@ function buildPayload(active, form) {
   if (active === 'destinations') {
     if (!form.name) return { error: 'Add a destination name first.' };
     const gallery = Array.from(new Set([form.image, ...(form.gallery || [])].filter(Boolean)));
+    const videoUrls = cleanUrlList(form.videoUrls);
 
     return {
       payload: {
@@ -687,6 +728,7 @@ function buildPayload(active, form) {
         image: form.image || gallery[0] || '',
         description: form.description || '',
         gallery,
+        videoUrls,
         count: Number(form.count) || 1,
       },
     };
@@ -705,6 +747,7 @@ function buildPayload(active, form) {
         desc: form.desc,
         badge: form.badge || 'Road Tested',
         link: normalizeProductLink(form.link, `#gear-${slugify(form.name)}`),
+        videoUrls: cleanUrlList(form.videoUrls),
         emoji: form.emoji || '★',
       },
     };

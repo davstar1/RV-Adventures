@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, ArrowRight, Camera, Play, X } from 'lucide-react';
 import { useContent } from './contentStore';
 import './OwnerIntro.css';
@@ -54,6 +54,27 @@ export default function OwnerIntro() {
 
   const previous = () => setIndex(currentIndex => (currentIndex - 1 + media.length) % media.length);
   const next = () => setIndex(currentIndex => (currentIndex + 1) % media.length);
+
+  useEffect(() => {
+    if (!modalOpen) return undefined;
+
+    const handleKeyDown = event => {
+      if (['INPUT', 'TEXTAREA', 'SELECT', 'VIDEO'].includes(event.target?.tagName)) return;
+      if (event.key === 'Escape') setModalOpen(false);
+      if (media.length < 2) return;
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        setIndex(currentIndex => (currentIndex - 1 + media.length) % media.length);
+      }
+      if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        setIndex(currentIndex => (currentIndex + 1) % media.length);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [modalOpen, media.length]);
 
   return (
     <section id="about" className="owner-section">

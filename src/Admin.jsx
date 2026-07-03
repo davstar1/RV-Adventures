@@ -175,7 +175,13 @@ function PhotoField({ label, value, onChange }) {
 
 function PhotoGalleryField({ value = [], onChange, label = 'Destination gallery photo URLs' }) {
   const photos = Array.isArray(value) ? value : [];
-  const addPhotos = nextPhotos => onChange([...photos, ...nextPhotos.filter(Boolean)]);
+  const visiblePhotos = photos
+    .map((photo, index) => ({ photo, index }))
+    .filter(item => item.photo.trim());
+  const addPhotos = nextPhotos => onChange([
+    ...photos.filter(photo => photo.trim()),
+    ...nextPhotos.filter(Boolean),
+  ]);
   const removePhoto = index => onChange(photos.filter((_, photoIndex) => photoIndex !== index));
 
   return (
@@ -185,7 +191,7 @@ function PhotoGalleryField({ value = [], onChange, label = 'Destination gallery 
           value={photos.join('\n')}
           rows={4}
           placeholder="Paste one image URL per line"
-          onChange={e => onChange(e.target.value.split('\n').map(url => url.trim()).filter(Boolean))}
+          onChange={e => onChange(e.target.value.split('\n'))}
         />
       </Field>
       <label className="admin-upload admin-gallery-upload">
@@ -201,9 +207,9 @@ function PhotoGalleryField({ value = [], onChange, label = 'Destination gallery 
           }}
         />
       </label>
-      {photos.length > 0 && (
+      {visiblePhotos.length > 0 && (
         <div className="admin-gallery-preview">
-          {photos.map((photo, index) => (
+          {visiblePhotos.map(({ photo, index }) => (
             <div className="admin-gallery-preview-item" key={`${photo}-${index}`}>
               <img src={photo} alt="" />
               <button type="button" onClick={() => removePhoto(index)}>Remove</button>
@@ -595,7 +601,11 @@ function formFromEntry(active, entry) {
 function buildPayload(active, form) {
   if (isPostTab(active)) {
     if (!form.title || !form.excerpt) return { error: 'Add a title and excerpt first.' };
-    const gallery = Array.from(new Set([form.image, ...(form.gallery || [])].filter(Boolean)));
+    const gallery = Array.from(new Set(
+      [form.image, ...(form.gallery || [])]
+        .map(value => String(value || '').trim())
+        .filter(Boolean),
+    ));
     return {
       payload: {
         slug: slugify(form.title),

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Heart, MessageCircle, Clock, Star, ExternalLink, ArrowRight, X } from 'lucide-react';
+import { Heart, MessageCircle, Clock, Star, ExternalLink, ArrowLeft, ArrowRight, X } from 'lucide-react';
 import { categories } from './data';
 import { useContent } from './contentStore';
 import NewsletterForm from './NewsletterForm';
@@ -85,8 +85,19 @@ function AffCard({ p }) {
 export default function Blog() {
   const [active, setActive] = useState('All');
   const [openPost, setOpenPost] = useState(null);
+  const [photoIndex, setPhotoIndex] = useState(0);
   const { posts, gear } = useContent();
   const filtered = active === 'All' ? posts : posts.filter(p => p.category === active);
+  const openPhotos = openPost ? Array.from(new Set([
+    openPost.image,
+    ...(Array.isArray(openPost.gallery) ? openPost.gallery : []),
+  ].filter(Boolean))) : [];
+  const openStory = post => {
+    setOpenPost(post);
+    setPhotoIndex(0);
+  };
+  const previousPhoto = () => setPhotoIndex(current => (current - 1 + openPhotos.length) % openPhotos.length);
+  const nextPhoto = () => setPhotoIndex(current => (current + 1) % openPhotos.length);
 
   return (
     <section id="blog" className="blog-section">
@@ -111,10 +122,10 @@ export default function Blog() {
         <div className="blog-layout">
           {/* ── Main ── */}
           <main className="blog-main">
-            {filtered[0] && <PostCard post={filtered[0]} big onOpen={setOpenPost} />}
+            {filtered[0] && <PostCard post={filtered[0]} big onOpen={openStory} />}
 
             <div className="cards-grid">
-              {filtered.slice(1).map(p => <PostCard key={p.id} post={p} onOpen={setOpenPost} />)}
+              {filtered.slice(1).map(p => <PostCard key={p.id} post={p} onOpen={openStory} />)}
             </div>
 
             {filtered.length === 0 && (
@@ -166,15 +177,26 @@ export default function Blog() {
               <X size={20} />
             </button>
             <div className="story-modal-image">
-              {openPost.image ? (
-                <img src={openPost.image} alt={openPost.title} />
+              {openPhotos[photoIndex] ? (
+                <img src={openPhotos[photoIndex]} alt={openPost.title} />
               ) : (
                 <div className="card-img-empty">{openPost.category}</div>
+              )}
+              {openPhotos.length > 1 && (
+                <>
+                  <button type="button" className="story-modal-arrow story-modal-arrow--left" onClick={previousPhoto} aria-label="Previous photo">
+                    <ArrowLeft size={22} />
+                  </button>
+                  <button type="button" className="story-modal-arrow story-modal-arrow--right" onClick={nextPhoto} aria-label="Next photo">
+                    <ArrowRight size={22} />
+                  </button>
+                </>
               )}
             </div>
             <div className="story-modal-copy">
               <span className="story-modal-kicker">{openPost.category}</span>
               <h3>{openPost.title}</h3>
+              {openPhotos.length > 1 && <span className="story-modal-photo-count">{photoIndex + 1} of {openPhotos.length}</span>}
               <div className="story-modal-meta">
                 <span>{openPost.author || 'Open Road RV'}</span>
                 <span>{openPost.date}</span>

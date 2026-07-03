@@ -59,6 +59,7 @@ const storyFormDefaults = {
   tag: '',
   excerpt: '',
   image: '',
+  gallery: [],
   author: '',
   readTime: '',
 };
@@ -172,14 +173,14 @@ function PhotoField({ label, value, onChange }) {
   );
 }
 
-function PhotoGalleryField({ value = [], onChange }) {
+function PhotoGalleryField({ value = [], onChange, label = 'Destination gallery photo URLs' }) {
   const photos = Array.isArray(value) ? value : [];
   const addPhotos = nextPhotos => onChange([...photos, ...nextPhotos.filter(Boolean)]);
   const removePhoto = index => onChange(photos.filter((_, photoIndex) => photoIndex !== index));
 
   return (
     <div className="admin-gallery-field">
-      <Field label="Destination gallery photo URLs">
+      <Field label={label}>
         <textarea
           value={photos.join('\n')}
           rows={4}
@@ -360,6 +361,11 @@ function AdminForm({ active, form, setForm, onSave, isEditing }) {
           <input value={form.readTime} placeholder="8 min" onChange={e => patch({ readTime: e.target.value })} />
         </Field>
         <PhotoField label="Story photo" value={form.image} onChange={image => patch({ image })} />
+        <PhotoGalleryField
+          label={`${postLabel} gallery photo URLs`}
+          value={form.gallery}
+          onChange={gallery => patch({ gallery })}
+        />
         <Field label="Excerpt">
           <textarea value={form.excerpt} rows={5} onChange={e => patch({ excerpt: e.target.value })} />
         </Field>
@@ -528,6 +534,7 @@ function formFromEntry(active, entry) {
       tag: entry.tag || '',
       excerpt: entry.excerpt || '',
       image: entry.image || '',
+      gallery: Array.isArray(entry.gallery) ? entry.gallery : [],
       author: entry.author || '',
       readTime: entry.readTime || '',
     };
@@ -588,6 +595,7 @@ function formFromEntry(active, entry) {
 function buildPayload(active, form) {
   if (isPostTab(active)) {
     if (!form.title || !form.excerpt) return { error: 'Add a title and excerpt first.' };
+    const gallery = Array.from(new Set([form.image, ...(form.gallery || [])].filter(Boolean)));
     return {
       payload: {
         slug: slugify(form.title),
@@ -595,7 +603,8 @@ function buildPayload(active, form) {
         tag: form.tag || null,
         title: form.title,
         excerpt: form.excerpt,
-        image: form.image || '',
+        image: form.image || gallery[0] || '',
+        gallery,
         author: form.author || 'Open Road RV',
         authorAvatar: '',
         date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),

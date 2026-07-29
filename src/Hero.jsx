@@ -1,73 +1,152 @@
-import { ChevronDown, MapPin } from 'lucide-react';
-import tacomaHero from './assets/tacoma-rv-road-hero.png';
+import { ArrowRight, Camera, ChevronDown, Compass, Map, MapPin, PlayCircle, Route } from 'lucide-react';
+import { useContent } from './contentStore';
 import './Hero.css';
 
 const routeStops = [
-  { label: 'Sedona', top: '40%', left: '57%' },
-  { label: 'Moab', top: '28%', left: '70%' },
-  { label: 'Big Bend', top: '64%', left: '67%' },
+  { label: 'Sedona', x: '18%', y: '67%' },
+  { label: 'Moab', x: '47%', y: '36%' },
+  { label: 'Big Bend', x: '74%', y: '58%' },
+  { label: 'Next Stop', x: '86%', y: '28%' },
+];
+
+const featuredLinks = [
+  {
+    href: '#destinations',
+    icon: Map,
+    title: "Places we've explored",
+    text: 'Campgrounds, trail towns, and road notes from real stops.',
+  },
+  {
+    href: '#blog',
+    icon: Camera,
+    title: 'Reviews & guides',
+    text: 'Honest takes on gear, mods, routes, and full-time RV life.',
+  },
+  {
+    href: '#videos',
+    icon: PlayCircle,
+    title: 'Watch the road',
+    text: 'Videos and trip moments without leaving Open Road.',
+  },
 ];
 
 export default function Hero() {
+  const { slides } = useContent();
+  const slideshowPhotos = slides.filter(slide => slide.image);
+  const scrollingSlides = slideshowPhotos.length > 0
+    ? [...slideshowPhotos, ...slideshowPhotos]
+    : [];
+
   return (
     <section id="home" className="hero">
-      {/* Background photo */}
-      <div className="hero-photo">
-        <img
-          src={tacomaHero}
-          alt="Toyota Tacoma towing a Jayco travel trailer through red rock country"
-          className="hero-photo-img"
-        />
-        <div className="hero-route-line" />
+      <div className="hero-scene" aria-hidden="true">
+        <div className="hero-road hero-road-one" />
+        <div className="hero-road hero-road-two" />
+        <div className="hero-compass">
+          <Compass size={138} strokeWidth={1.05} />
+        </div>
+        <div className="hero-map-line" />
         {routeStops.map(stop => (
-          <a
+          <span
             key={stop.label}
-            href="#destinations"
             className="hero-map-pin"
-            style={{ top: stop.top, left: stop.left }}
-            aria-label={`Explore ${stop.label}`}
+            style={{ top: stop.y, left: stop.x }}
           >
             <span />
             <strong>{stop.label}</strong>
-          </a>
+          </span>
         ))}
-        <div className="hero-photo-scrim" />
+        <div className="hero-stars">
+          <i />
+          <i />
+          <i />
+          <i />
+          <i />
+        </div>
       </div>
 
-      {/* Content */}
-      <div className="hero-body">
-        <div className="hero-content section-wrap">
+      <div className="hero-body section-wrap">
+        <div className="hero-content">
           <span className="eyebrow hero-eyebrow">
-            <MapPin size={11} /> Full-Time RV Life &nbsp;·&nbsp; Real Stories &nbsp;·&nbsp; Honest Reviews
+            <MapPin size={12} /> Full-time RV life, told from the road
           </span>
 
           <h1 className="hero-title">
-            Every Mile a<br />
-            <em>New Story</em>
+            Come ride along
+            <em>with Open Road.</em>
           </h1>
 
           <p className="hero-lead">
-            We live full-time in our RV and write about what we actually find —
-            hidden campgrounds, honest gear reviews, real budgets, and the kind
-            of adventures that don't make it onto the brochure.
+            Real destinations, campground notes, RV lessons, videos, photos,
+            gear reviews, and the honest little moments that make life on the
+            road worth following.
           </p>
 
           <div className="hero-actions">
-            <a href="#destinations" className="btn-primary">Start Exploring</a>
-            <a href="#blog" className="btn-ghost">Read Stories</a>
+            <a href="#destinations" className="btn-primary">
+              Start Exploring <ArrowRight size={17} />
+            </a>
+            <a href="#about" className="btn-ghost">Meet Us</a>
           </div>
 
           <div className="hero-trust">
-            <div className="trust-item"><span className="trust-num">Real</span><span className="trust-label">Road stories</span></div>
+            <div className="trust-item"><span className="trust-num">Real</span><span className="trust-label">Road notes</span></div>
             <div className="trust-sep" />
-            <div className="trust-item"><span className="trust-num">Owner</span><span className="trust-label">Shared trips</span></div>
+            <div className="trust-item"><span className="trust-num">Fresh</span><span className="trust-label">Uploads</span></div>
             <div className="trust-sep" />
-            <div className="trust-item"><span className="trust-num">Fresh</span><span className="trust-label">Uploaded content</span></div>
+            <div className="trust-item"><span className="trust-num">Owner</span><span className="trust-label">Point of view</span></div>
+          </div>
+        </div>
+
+        <div className="hero-feature" aria-label="Featured site sections">
+          <div className="hero-feature-top">
+            <span><Route size={16} /> Start here</span>
+            <a href="#admin/slides">Add photos</a>
+          </div>
+          {slideshowPhotos.length > 0 ? (
+            <div className="hero-slideshow" aria-label="Adventure photo slideshow">
+              <div
+                className="hero-slideshow-track"
+                style={{ animationDuration: `${Math.max(slideshowPhotos.length * 8, 18)}s` }}
+              >
+                {scrollingSlides.map((slide, index) => (
+                  <figure className="hero-slide" key={`${slide.id || slide.image}-${index}`}>
+                    <img src={slide.image} alt={slide.title || 'Open Road adventure'} />
+                    {(slide.title || slide.caption) && (
+                      <figcaption>
+                        {slide.title && <strong>{slide.title}</strong>}
+                        {slide.caption && <span>{slide.caption}</span>}
+                      </figcaption>
+                    )}
+                  </figure>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="hero-feature-map">
+              {routeStops.map(stop => (
+                <span key={stop.label} style={{ top: stop.y, left: stop.x }} />
+              ))}
+            </div>
+          )}
+          <div className="hero-feature-links">
+            {featuredLinks.map(item => {
+              const Icon = item.icon;
+              return (
+                <a href={item.href} key={item.title} className="hero-feature-link">
+                  <Icon size={20} />
+                  <span>
+                    <strong>{item.title}</strong>
+                    <small>{item.text}</small>
+                  </span>
+                  <ArrowRight size={16} />
+                </a>
+              );
+            })}
           </div>
         </div>
       </div>
 
-      {/* Scroll indicator */}
       <a href="#destinations" className="hero-scroll" aria-label="Scroll to destinations">
         <ChevronDown size={24} />
       </a>

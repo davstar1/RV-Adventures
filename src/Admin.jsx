@@ -38,6 +38,7 @@ import './Admin.css';
 
 const tabs = [
   { id: 'stories', label: 'Reviews & Guides', icon: PenLine, store: 'posts' },
+  { id: 'slides', label: 'Home Slideshow', icon: Camera, store: 'slides' },
   { id: 'about', label: 'About Us', icon: UserRound, store: 'about' },
   { id: 'reviews', label: 'Reviews', icon: Star, store: 'posts', category: 'Reviews' },
   { id: 'tips', label: 'Tips & Tricks', icon: Lightbulb, store: 'posts', category: 'Tips & Tricks' },
@@ -76,6 +77,11 @@ const emptyForms = {
     image: '',
     gallery: [],
     media: [],
+  },
+  slides: {
+    title: '',
+    images: [],
+    caption: '',
   },
   videos: {
     title: '',
@@ -445,6 +451,25 @@ function AdminForm({ active, form, setForm, onSave, isEditing }) {
     );
   }
 
+  if (active === 'slides') {
+    return (
+      <div className="admin-form-grid">
+        <Field label="Slide title">
+          <input value={form.title} placeholder="Morning in the desert" onChange={e => patch({ title: e.target.value })} />
+        </Field>
+        <PhotoGalleryField
+          label="Slideshow photo URLs"
+          value={form.images}
+          onChange={images => patch({ images })}
+        />
+        <Field label="Caption">
+          <textarea value={form.caption} rows={4} placeholder="Optional short note about this photo." onChange={e => patch({ caption: e.target.value })} />
+        </Field>
+        <button className="admin-save" onClick={onSave}><Plus size={16} /> {actionLabel('Slideshow Photo')}</button>
+      </div>
+    );
+  }
+
   if (active === 'destinations') {
     return (
       <div className="admin-form-grid">
@@ -525,6 +550,7 @@ function metaForEntry(active, entry) {
   if (isPostTab(active)) return `${entry.category || 'Story'} · ${entry.date || 'Draft'}`;
   if (active === 'videos') return `${entry.channel || 'Video'} · ${entry.duration || 'New'}`;
   if (active === 'destinations') return `${entry.count || 0} guides`;
+  if (active === 'slides') return entry.caption || 'Home slideshow photo';
   if (active === 'gear') return `${entry.category || 'Gear'} · ${entry.price || 'See price'}`;
   return entry.time || 'Just now';
 }
@@ -620,6 +646,14 @@ function formFromEntry(active, entry) {
       gallery: Array.isArray(entry.gallery) ? entry.gallery : [],
       videoUrls: cleanUrlList(entry.videoUrls),
       count: String(entry.count || '1'),
+    };
+  }
+
+  if (active === 'slides') {
+    return {
+      title: entry.title || '',
+      images: cleanUrlList([entry.image]),
+      caption: entry.caption || '',
     };
   }
 
@@ -731,6 +765,22 @@ function buildPayload(active, form) {
         videoUrls,
         count: Number(form.count) || 1,
       },
+    };
+  }
+
+  if (active === 'slides') {
+    const images = cleanUrlList(form.images);
+
+    if (images.length === 0) return { error: 'Add at least one photo URL or upload a photo first.' };
+
+    return {
+      payloads: images.map((image, index) => ({
+        title: images.length > 1
+          ? `${form.title || 'Adventure photo'} ${index + 1}`
+          : form.title || 'Adventure photo',
+        image,
+        caption: form.caption || '',
+      })),
     };
   }
 
@@ -943,13 +993,14 @@ export default function Admin() {
 
   const save = async () => {
     try {
-      const { payload, error } = buildPayload(active, form);
+      const { payload, payloads, error } = buildPayload(active, form);
       if (error) return setNotice(error);
 
       if (editingId) {
-        await updateContentItem(activeTab.store, editingId, payload);
+        await updateContentItem(activeTab.store, editingId, payload || payloads[0]);
       } else {
-        await addContentItem(activeTab.store, payload);
+        const entriesToAdd = payloads || [payload];
+        await Promise.all(entriesToAdd.map(entry => addContentItem(activeTab.store, entry)));
       }
 
       setForms(current => ({ ...current, [active]: emptyForms[active] }));

@@ -17,6 +17,7 @@ const emptyContent = {
   gear: [],
   comments: [],
   about: [],
+  slides: [],
 };
 
 const typeMap = {
@@ -26,6 +27,7 @@ const typeMap = {
   gear: 'gear',
   comments: 'community',
   about: 'about',
+  slides: 'slide',
 };
 
 function readStoredContent() {
@@ -52,6 +54,7 @@ export function getContent() {
     gear: stored.gear,
     comments: stored.comments,
     about: stored.about,
+    slides: stored.slides,
     stored,
     remoteReady: false,
     storageMode: 'local',
@@ -89,6 +92,7 @@ export function useContent() {
           gear: rows.filter(row => row.remoteType === typeMap.gear),
           comments: rows.filter(row => row.remoteType === typeMap.comments),
           about: rows.filter(row => row.remoteType === typeMap.about),
+          slides: rows.filter(row => row.remoteType === typeMap.slides),
         };
 
         setContent({
@@ -98,6 +102,7 @@ export function useContent() {
           gear: remote.gear,
           comments: remote.comments,
           about: remote.about,
+          slides: remote.slides,
           stored: remote,
           remoteReady: true,
           storageMode: 'supabase',

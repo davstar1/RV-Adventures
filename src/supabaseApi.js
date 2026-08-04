@@ -213,6 +213,39 @@ export async function deleteRemoteEntry(id) {
   });
 }
 
+export async function uploadPhotoToGitHub(file, folder = 'uploads') {
+  if (!isSupabaseConfigured) {
+    throw new Error('Supabase is not configured.');
+  }
+
+  const session = await refreshAdminSession(readSession());
+  if (!session?.access_token) {
+    throw new Error('Please sign in before uploading photos.');
+  }
+
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('folder', folder);
+
+  const response = await fetch(`${SUPABASE_URL}/functions/v1/upload-github-photo`, {
+    method: 'POST',
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${session.access_token}`,
+    },
+    body: formData,
+  });
+
+  const text = await response.text();
+  const body = text ? JSON.parse(text) : null;
+
+  if (!response.ok) {
+    throw new Error(body?.error || body?.message || 'Photo upload failed.');
+  }
+
+  return body;
+}
+
 export async function subscribeRemoteEmail(email, source = 'website') {
   await publicRequest('/rest/v1/newsletter_subscribers', {
     method: 'POST',

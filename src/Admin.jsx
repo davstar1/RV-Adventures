@@ -33,6 +33,7 @@ import {
   onAdminAuthChange,
   signInAdmin,
   signOutAdmin,
+  uploadPhotoToGitHub,
 } from './supabaseApi';
 import './Admin.css';
 
@@ -144,8 +145,6 @@ function readPhoto(file) {
   });
 }
 
-const readMediaFile = readPhoto;
-
 function Field({ label, children }) {
   return (
     <label className="admin-field">
@@ -155,7 +154,35 @@ function Field({ label, children }) {
   );
 }
 
-function PhotoField({ label, value, onChange }) {
+async function uploadOrReadPhoto(file, uploadPhoto, folder) {
+  if (uploadPhoto) {
+    return uploadPhoto(file, folder);
+  }
+
+  return readPhoto(file);
+}
+
+const readMediaFile = readPhoto;
+
+function photoFolderForActive(active, form = {}) {
+  if (active === 'slides') return 'slideshow';
+  if (active === 'about') return 'about';
+  if (active === 'destinations') return 'destinations';
+  if (active === 'gear') return 'gear';
+  if (active === 'videos') return 'videos';
+  if (isPostTab(active)) {
+    const category = categoryForActive(active, form).toLowerCase();
+    if (category.includes('gear')) return 'gear';
+    if (category.includes('tip')) return 'tips';
+    if (category.includes('campground')) return 'campgrounds';
+    if (category.includes('destination')) return 'destinations';
+    return 'reviews';
+  }
+
+  return 'uploads';
+}
+
+function PhotoField({ label, value, onChange, uploadPhoto, folder }) {
   return (
     <div className="admin-photo-field">
       <Field label={label}>
@@ -174,7 +201,8 @@ function PhotoField({ label, value, onChange }) {
           accept="image/*"
           onChange={async e => {
             const file = e.target.files?.[0];
-            if (file) onChange(await readPhoto(file));
+            if (file) onChange(await uploadOrReadPhoto(file, uploadPhoto, folder));
+            e.target.value = '';
           }}
         />
       </label>
@@ -182,7 +210,7 @@ function PhotoField({ label, value, onChange }) {
   );
 }
 
-function PhotoGalleryField({ value = [], onChange, label = 'Destination gallery photo URLs' }) {
+function PhotoGalleryField({ value = [], onChange, label = 'Destination gallery photo URLs', uploadPhoto, folder }) {
   const photos = Array.isArray(value) ? value : [];
   const visiblePhotos = photos
     .map((photo, index) => ({ photo, index }))
@@ -212,7 +240,8 @@ function PhotoGalleryField({ value = [], onChange, label = 'Destination gallery 
           multiple
           onChange={async e => {
             const files = Array.from(e.target.files || []);
-            if (files.length) addPhotos(await Promise.all(files.map(readPhoto)));
+            if (files.length) addPhotos(await Promise.all(files.map(file => uploadOrReadPhoto(file, uploadPhoto, folder))));
+            e.target.value = '';
           }}
         />
       </label>
@@ -247,7 +276,7 @@ function VideoUrlField({ value = [], onChange, label = 'Video URLs' }) {
   );
 }
 
-function AboutMediaField({ value = [], onChange }) {
+function AboutMediaField({ value = [], onChange, uploadPhoto, folder }) {
   const media = Array.isArray(value) ? value : [];
   const addItem = item => onChange([...media, item]);
   const updateItem = (index, patch) => onChange(media.map((item, itemIndex) => (
@@ -284,11 +313,12 @@ function AboutMediaField({ value = [], onChange }) {
               if (files.length) {
                 const uploaded = await Promise.all(files.map(async file => ({
                   type: 'image',
-                  src: await readMediaFile(file),
+                  src: await uploadOrReadPhoto(file, uploadPhoto, folder),
                   description: '',
                 })));
                 onChange([...media, ...uploaded]);
               }
+              e.target.value = '';
             }}
           />
         </label>
@@ -359,10 +389,11 @@ function AboutMediaField({ value = [], onChange }) {
   );
 }
 
-function AdminForm({ active, form, setForm, onSave, isEditing }) {
+function AdminForm({ active, form, setForm, onSave, isEditing, uploadPhoto }) {
   const patch = values => setForm(current => ({ ...current, ...values }));
   const actionLabel = label => isEditing ? `Update ${label}` : `Add ${label}`;
   const fixedPostCategory = activeTabFor(active).category;
+  const uploadFolder = photoFolderForActive(active, form);
 
   if (isPostTab(active)) {
     const postLabel = fixedPostCategory || 'Story';
@@ -392,11 +423,13 @@ function AdminForm({ active, form, setForm, onSave, isEditing }) {
         <Field label="Read time">
           <input value={form.readTime} placeholder="8 min" onChange={e => patch({ readTime: e.target.value })} />
         </Field>
-        <PhotoField label="Story photo" value={form.image} onChange={image => patch({ image })} />
+        <PhotoField label="Story photo" value={form.image} onChange={image => patch({ image })} uploadPhoto={uploadPhoto} folder={uploadFolder} />
         <PhotoGalleryField
           label={`${postLabel} gallery photo URLs`}
           value={form.gallery}
           onChange={gallery => patch({ gallery })}
+          uploadPhoto={uploadPhoto}
+          folder={uploadFolder}
         />
         <VideoUrlField
           label={`${postLabel} video URLs`}
@@ -429,7 +462,7 @@ function AdminForm({ active, form, setForm, onSave, isEditing }) {
         <Field label="Channel">
           <input value={form.channel} onChange={e => patch({ channel: e.target.value })} />
         </Field>
-        <PhotoField label="Thumbnail override" value={form.thumb} onChange={thumb => patch({ thumb })} />
+        <PhotoField label="Thumbnail override" value={form.thumb} onChange={thumb => patch({ thumb })} uploadPhoto={uploadPhoto} folder={uploadFolder} />
         <button className="admin-save" onClick={onSave}><Plus size={16} /> {actionLabel('Video')}</button>
       </div>
     );
@@ -441,11 +474,11 @@ function AdminForm({ active, form, setForm, onSave, isEditing }) {
         <Field label="About section title">
           <input value={form.title} placeholder="Meet the Open Road crew" onChange={e => patch({ title: e.target.value })} />
         </Field>
-        <PhotoField label="Main about photo" value={form.image} onChange={image => patch({ image })} />
+        <PhotoField label="Main about photo" value={form.image} onChange={image => patch({ image })} uploadPhoto={uploadPhoto} folder={uploadFolder} />
         <Field label="About us story">
           <textarea value={form.body} rows={7} placeholder="Write your story, why you travel, and what visitors can expect from the site." onChange={e => patch({ body: e.target.value })} />
         </Field>
-        <AboutMediaField value={form.media} onChange={media => patch({ media })} />
+        <AboutMediaField value={form.media} onChange={media => patch({ media })} uploadPhoto={uploadPhoto} folder={uploadFolder} />
         <button className="admin-save" onClick={onSave}><Plus size={16} /> {actionLabel('About Section')}</button>
       </div>
     );
@@ -461,6 +494,8 @@ function AdminForm({ active, form, setForm, onSave, isEditing }) {
           label="Slideshow photo URLs"
           value={form.images}
           onChange={images => patch({ images })}
+          uploadPhoto={uploadPhoto}
+          folder={uploadFolder}
         />
         <Field label="Caption">
           <textarea value={form.caption} rows={4} placeholder="Optional short note about this photo." onChange={e => patch({ caption: e.target.value })} />
@@ -479,11 +514,11 @@ function AdminForm({ active, form, setForm, onSave, isEditing }) {
         <Field label="Number of guides">
           <input type="number" min="1" value={form.count} onChange={e => patch({ count: e.target.value })} />
         </Field>
-        <PhotoField label="Destination photo" value={form.image} onChange={image => patch({ image })} />
+        <PhotoField label="Destination photo" value={form.image} onChange={image => patch({ image })} uploadPhoto={uploadPhoto} folder={uploadFolder} />
         <Field label="Destination description">
           <textarea value={form.description} rows={5} onChange={e => patch({ description: e.target.value })} />
         </Field>
-        <PhotoGalleryField value={form.gallery} onChange={gallery => patch({ gallery })} />
+        <PhotoGalleryField value={form.gallery} onChange={gallery => patch({ gallery })} uploadPhoto={uploadPhoto} folder={uploadFolder} />
         <VideoUrlField value={form.videoUrls} onChange={videoUrls => patch({ videoUrls })} />
         <button className="admin-save" onClick={onSave}><Plus size={16} /> {actionLabel('Destination')}</button>
       </div>
@@ -502,9 +537,7 @@ function AdminForm({ active, form, setForm, onSave, isEditing }) {
         <Field label="Price">
           <input value={form.price} placeholder="$129" onChange={e => patch({ price: e.target.value })} />
         </Field>
-        <Field label="Gear photo URL">
-          <input value={form.image} placeholder="https://example.com/gear-photo.jpg" onChange={e => patch({ image: e.target.value })} />
-        </Field>
+        <PhotoField label="Gear photo URL" value={form.image} onChange={image => patch({ image })} uploadPhoto={uploadPhoto} folder={uploadFolder} />
         <Field label="Rating">
           <input type="number" min="1" max="5" step=".1" value={form.rating} onChange={e => patch({ rating: e.target.value })} />
         </Field>
@@ -940,6 +973,7 @@ export default function Admin() {
   const [notice, setNotice] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [session, setSession] = useState(getAdminSession);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const content = useContent();
 
   useEffect(() => {
@@ -989,6 +1023,22 @@ export default function Admin() {
     setEditingId(null);
     setForms(current => ({ ...current, [active]: emptyForms[active] }));
     setNotice('');
+  };
+
+  const uploadAdminPhoto = async (file, folder) => {
+    setUploadingPhoto(true);
+    setNotice(`Uploading ${file.name} to GitHub...`);
+
+    try {
+      const uploaded = await uploadPhotoToGitHub(file, folder);
+      setNotice(`Photo uploaded. URL added: ${uploaded.url}`);
+      return uploaded.url;
+    } catch (err) {
+      setNotice(err.message);
+      throw err;
+    } finally {
+      setUploadingPhoto(false);
+    }
   };
 
   const save = async () => {
@@ -1065,12 +1115,13 @@ export default function Admin() {
           <section className="admin-panel">
             <div className="admin-panel-head">
               <h2>{tabs.find(tab => tab.id === active)?.label}</h2>
-              <div className="admin-panel-status">
-                {editingId && <button className="admin-cancel-edit" onClick={cancelEdit}>Cancel Edit</button>}
-                {notice && <span className="admin-notice">{notice}</span>}
-              </div>
+            <div className="admin-panel-status">
+              {editingId && <button className="admin-cancel-edit" onClick={cancelEdit}>Cancel Edit</button>}
+              {uploadingPhoto && <span className="admin-notice">Uploading photo...</span>}
+              {notice && <span className="admin-notice">{notice}</span>}
             </div>
-            <AdminForm active={active} form={form} setForm={setForm} onSave={save} isEditing={Boolean(editingId)} />
+            </div>
+            <AdminForm active={active} form={form} setForm={setForm} onSave={save} isEditing={Boolean(editingId)} uploadPhoto={uploadAdminPhoto} />
             <EntryList active={active} entries={activeEntries} onEdit={editEntry} onDelete={removeEntry} />
           </section>
         </div>

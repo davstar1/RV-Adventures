@@ -24,36 +24,93 @@
   white-space: pre-line;
 }
 
-.owner-gallery {
+.owner-collage {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-auto-rows: 118px;
+  gap: 8px;
+  margin-top: 31px;
+}
+
+.owner-collage-tile {
   position: relative;
   overflow: hidden;
-  min-height: 380px;
-  margin-top: 31px;
-  border-radius: var(--r-lg);
-  background: var(--ink);
-  box-shadow: var(--shadow-hover);
-}
-
-.owner-gallery-stage {
-  width: 100%;
-  min-height: 380px;
-  border: 0;
+  min-height: 118px;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 8px;
   padding: 0;
-  background: transparent;
-  color: inherit;
-  display: block;
+  background: var(--ink);
+  box-shadow: var(--shadow-card);
+  isolation: isolate;
 }
 
-.owner-gallery-stage:disabled {
-  cursor: default;
+.owner-collage-tile--1,
+.owner-collage-tile--6 {
+  grid-column: span 3;
+  grid-row: span 2;
 }
 
-.owner-gallery img,
-.owner-video-wrap video {
+.owner-collage-tile--2,
+.owner-collage-tile--3,
+.owner-collage-tile--4,
+.owner-collage-tile--5 {
+  grid-column: span 3;
+}
+
+.owner-collage-tile img,
+.owner-collage-tile video {
   width: 100%;
   height: 100%;
-  min-height: 380px;
+  display: block;
   object-fit: cover;
+  transition: transform .35s ease, filter .35s ease;
+}
+
+.owner-collage-tile::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(180deg, transparent 28%, rgba(0,0,0,.42));
+  opacity: .55;
+  transition: opacity .2s ease;
+}
+
+.owner-collage-overlay {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  z-index: 2;
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(15, 25, 34, .82);
+  color: var(--white);
+  box-shadow: var(--shadow-card);
+  opacity: .86;
+  transform: translateY(2px);
+  transition: opacity .2s ease, transform .2s ease, background .2s ease;
+}
+
+.owner-collage-tile:hover img,
+.owner-collage-tile:hover video {
+  transform: scale(1.055);
+  filter: saturate(1.08) contrast(1.04);
+}
+
+.owner-collage-tile:hover::after {
+  opacity: .84;
+}
+
+.owner-collage-tile:hover .owner-collage-overlay {
+  background: var(--gold);
+  color: var(--ink);
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .owner-video-wrap {
@@ -64,6 +121,10 @@
 
 .owner-video-wrap video {
   display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 380px;
+  object-fit: cover;
 }
 
 .owner-video-play {
@@ -82,41 +143,6 @@
   align-content: center;
   gap: 12px;
   color: var(--sand-lt);
-  font-weight: 800;
-}
-
-.owner-gallery-controls {
-  position: absolute;
-  left: 18px;
-  right: 18px;
-  bottom: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  color: var(--white);
-}
-
-.owner-gallery-controls button,
-.owner-gallery-controls span {
-  border: 0;
-  border-radius: 999px;
-  background: rgba(28,43,58,.78);
-  color: var(--white);
-  box-shadow: var(--shadow-card);
-}
-
-.owner-gallery-controls button {
-  width: 42px;
-  height: 42px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.owner-gallery-controls span {
-  padding: 9px 13px;
-  font-size: 12px;
   font-weight: 800;
 }
 
@@ -254,16 +280,9 @@
     grid-template-columns: 1fr;
   }
 
-  .owner-gallery {
+  .owner-collage {
     margin-top: 0;
-  }
-
-  .owner-gallery-controls {
-    justify-content: space-between;
-  }
-
-  .owner-gallery-controls span {
-    display: none;
+    grid-auto-rows: 104px;
   }
 
   .owner-modal {
@@ -278,5 +297,29 @@
 
   .owner-modal-copy {
     padding: 22px 20px 24px;
+  }
+}
+
+@media (max-width: 560px) {
+  .owner-collage {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: 148px;
+    gap: 7px;
+  }
+
+  .owner-collage-tile,
+  .owner-collage-tile--1,
+  .owner-collage-tile--2,
+  .owner-collage-tile--3,
+  .owner-collage-tile--4,
+  .owner-collage-tile--5,
+  .owner-collage-tile--6 {
+    grid-column: span 1;
+    grid-row: span 1;
+  }
+
+  .owner-collage-tile--1 {
+    grid-column: span 2;
+    grid-row: span 2;
   }
 }

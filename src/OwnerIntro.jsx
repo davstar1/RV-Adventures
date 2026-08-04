@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowLeft, ArrowRight, Camera, Play, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Camera, Images, Play, X } from 'lucide-react';
 import { useContent } from './contentStore';
 import './OwnerIntro.css';
 
@@ -44,6 +44,28 @@ function MediaDisplay({ item, title, compact = false }) {
   return <img src={item.src} alt={title || 'Open Road RV Adventures'} />;
 }
 
+function AboutTile({ item, title, index, onOpen }) {
+  const isVideo = item.type === 'video';
+
+  return (
+    <button
+      type="button"
+      className={`owner-collage-tile owner-collage-tile--${(index % 6) + 1}`}
+      onClick={() => onOpen(index)}
+      aria-label={`Open About ${isVideo ? 'video' : 'photo'} ${index + 1}`}
+    >
+      {isVideo ? (
+        <video src={item.src} muted playsInline preload="metadata" />
+      ) : (
+        <img src={item.src} alt={item.description || title || 'Open Road RV Adventures'} />
+      )}
+      <span className="owner-collage-overlay">
+        {isVideo ? <Play size={22} /> : <Images size={22} />}
+      </span>
+    </button>
+  );
+}
+
 export default function OwnerIntro() {
   const { about } = useContent();
   const profile = about[0];
@@ -54,6 +76,10 @@ export default function OwnerIntro() {
 
   const previous = () => setIndex(currentIndex => (currentIndex - 1 + media.length) % media.length);
   const next = () => setIndex(currentIndex => (currentIndex + 1) % media.length);
+  const openMedia = mediaIndex => {
+    setIndex(mediaIndex);
+    setModalOpen(true);
+  };
 
   useEffect(() => {
     if (!modalOpen) return undefined;
@@ -87,21 +113,21 @@ export default function OwnerIntro() {
           </p>
         </div>
 
-        <div className="owner-gallery" aria-label="About us photo viewer">
-          <button
-            type="button"
-            className="owner-gallery-stage"
-            onClick={() => current && setModalOpen(true)}
-            disabled={!current}
-            aria-label="Open About media"
-          >
-            <MediaDisplay item={current} title={profile?.title} />
-          </button>
-          {media.length > 1 && (
-            <div className="owner-gallery-controls">
-              <button type="button" onClick={previous} aria-label="Previous about photo"><ArrowLeft size={18} /></button>
-              <span>{index + 1} / {media.length}</span>
-              <button type="button" onClick={next} aria-label="Next about photo"><ArrowRight size={18} /></button>
+        <div className="owner-collage" aria-label="About us photo and video collage">
+          {media.length > 0 ? (
+            media.map((item, mediaIndex) => (
+              <AboutTile
+                key={`${item.src}-${mediaIndex}`}
+                item={item}
+                title={profile?.title}
+                index={mediaIndex}
+                onOpen={openMedia}
+              />
+            ))
+          ) : (
+            <div className="owner-gallery-empty">
+              <Camera size={34} />
+              <span>Add About photos and videos in Admin</span>
             </div>
           )}
         </div>

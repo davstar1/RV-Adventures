@@ -147,25 +147,54 @@ function readPhoto(file) {
 
 function loadImageFromFile(file) {
   return new Promise((resolve, reject) => {
+    const objectUrl = URL.createObjectURL(file);
     const image = new Image();
     image.onload = () => resolve(image);
-    image.onerror = reject;
-    image.src = URL.createObjectURL(file);
+    image.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error('Photo could not be prepared for compression.'));
+    };
+    image.src = objectUrl;
   });
 }
 
 async function optimizePhoto(file, maxWidth = 1600, quality = 0.78) {
   if (!file.type.startsWith('image/') || file.type === 'image/gif') return file;
 
-  const image = await loadImageFromFile(file);
+  let image;
+
+  try {
+    image = await loadImageFromFile(file);
+  } catch {
+    return file;
+  }
+
+  if (!image.naturalWidth || !image.naturalHeight) {
+    URL.revokeObjectURL(image.src);
+    return file;
+  }
+
   const scale = Math.min(1, maxWidth / image.naturalWidth);
   const width = Math.round(image.naturalWidth * scale);
   const height = Math.round(image.naturalHeight * scale);
+
+  if (!width || !height) {
+    URL.revokeObjectURL(image.src);
+    return file;
+  }
+
   const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
 
   canvas.width = width;
   canvas.height = height;
-  canvas.getContext('2d').drawImage(image, 0, 0, width, height);
+
+  if (!context) {
+    URL.revokeObjectURL(image.src);
+    return file;
+  }
+
+  context.drawImage(image, 0, 0, width, height);
   URL.revokeObjectURL(image.src);
 
   return new Promise(resolve => {

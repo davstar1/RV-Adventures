@@ -23,6 +23,11 @@ function cleanSegment(value: string, fallback: string) {
     .slice(0, 70) || fallback;
 }
 
+function shortPhotoName(extension: string) {
+  const randomPart = crypto.randomUUID().replace(/-/g, '').slice(0, 8);
+  return `p-${randomPart}.${extension}`;
+}
+
 function extensionFor(file: File) {
   const fromName = file.name.match(/\.([a-z0-9]+)$/i)?.[1]?.toLowerCase();
   if (fromName && ['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(fromName)) {
@@ -83,8 +88,7 @@ Deno.serve(async request => {
     }
 
     const extension = extensionFor(file);
-    const baseName = cleanSegment(file.name, 'photo');
-    const uniqueName = `${Date.now()}-${baseName}.${extension}`;
+    const uniqueName = shortPhotoName(extension);
     const repoPath = `public/photos/${folder || 'uploads'}/${uniqueName}`;
     const bytes = new Uint8Array(await file.arrayBuffer());
     const content = base64FromBytes(bytes);

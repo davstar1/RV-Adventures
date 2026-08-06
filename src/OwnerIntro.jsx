@@ -41,7 +41,7 @@ function MediaDisplay({ item, title, compact = false }) {
     );
   }
 
-  return <img src={item.src} alt={title || 'Open Road RV Adventures'} />;
+  return <img src={item.src} alt={title || 'Open Road RV Adventures'} loading="lazy" decoding="async" />;
 }
 
 function AboutTile({ item, title, index, onOpen }) {
@@ -57,7 +57,12 @@ function AboutTile({ item, title, index, onOpen }) {
       {isVideo ? (
         <video src={item.src} muted playsInline preload="metadata" />
       ) : (
-        <img src={item.src} alt={item.description || title || 'Open Road RV Adventures'} />
+        <img
+          src={item.src}
+          alt={item.description || title || 'Open Road RV Adventures'}
+          loading="lazy"
+          decoding="async"
+        />
       )}
       <span className="owner-collage-overlay">
         {isVideo ? <Play size={22} /> : <Images size={22} />}

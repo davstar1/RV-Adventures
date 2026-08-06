@@ -145,6 +145,47 @@ function readPhoto(file) {
   });
 }
 
+function loadImageFromFile(file) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = reject;
+    image.src = URL.createObjectURL(file);
+  });
+}
+
+async function optimizePhoto(file, maxWidth = 1600, quality = 0.78) {
+  if (!file.type.startsWith('image/') || file.type === 'image/gif') return file;
+
+  const image = await loadImageFromFile(file);
+  const scale = Math.min(1, maxWidth / image.naturalWidth);
+  const width = Math.round(image.naturalWidth * scale);
+  const height = Math.round(image.naturalHeight * scale);
+  const canvas = document.createElement('canvas');
+
+  canvas.width = width;
+  canvas.height = height;
+  canvas.getContext('2d').drawImage(image, 0, 0, width, height);
+  URL.revokeObjectURL(image.src);
+
+  return new Promise(resolve => {
+    canvas.toBlob(blob => {
+      if (!blob) {
+        resolve(file);
+        return;
+      }
+
+      const baseName = file.name
+        .replace(/\.[^.]+$/, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '') || 'photo';
+
+      resolve(new File([blob], `${baseName}.jpg`, { type: 'image/jpeg' }));
+    }, 'image/jpeg', quality);
+  });
+}
+
 function Field({ label, children }) {
   return (
     <label className="admin-field">
@@ -155,11 +196,13 @@ function Field({ label, children }) {
 }
 
 async function uploadOrReadPhoto(file, uploadPhoto, folder) {
+  const optimized = await optimizePhoto(file);
+
   if (uploadPhoto) {
-    return uploadPhoto(file, folder);
+    return uploadPhoto(optimized, folder);
   }
 
-  return readPhoto(file);
+  return readPhoto(optimized);
 }
 
 const readMediaFile = readPhoto;

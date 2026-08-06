@@ -5,7 +5,7 @@ import './Destinations.css';
 
 function DestinationMedia({ item, name }) {
   if (!item) return <div className="dest-gallery-empty">Add destination photos or videos in Admin</div>;
-  if (item.type === 'image') return <img src={item.src} alt={name} />;
+  if (item.type === 'image') return <img src={item.src} alt={name} loading="lazy" decoding="async" />;
 
   const youtubeId = youtubeIdFromUrl(item.src);
   if (youtubeId) {
@@ -86,7 +86,7 @@ export default function Destinations() {
           {destinations.map(d => (
             <button key={d.id} type="button" className="dest-card" onClick={() => openGallery(d)}>
               {d.image ? (
-                <img src={d.image} alt={d.name} loading="lazy" />
+                <img src={d.image} alt={d.name} loading="lazy" decoding="async" />
               ) : (
                 <div className="dest-card-empty">{d.name}</div>
               )}

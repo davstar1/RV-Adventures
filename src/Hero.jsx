@@ -111,7 +111,12 @@ export default function Hero() {
               >
                 {scrollingSlides.map((slide, index) => (
                   <figure className="hero-slide" key={`${slide.id || slide.image}-${index}`}>
-                    <img src={slide.image} alt={slide.title || 'Open Road adventure'} />
+                    <img
+                      src={slide.image}
+                      alt={slide.title || 'Open Road adventure'}
+                      loading={index === 0 ? 'eager' : 'lazy'}
+                      decoding="async"
+                    />
                     {(slide.title || slide.caption) && (
                       <figcaption>
                         {slide.title && <strong>{slide.title}</strong>}

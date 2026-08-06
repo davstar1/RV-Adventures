@@ -120,6 +120,7 @@ Deno.serve(async request => {
       path: repoPath,
       url: `/photos/${folder || 'uploads'}/${uniqueName}`,
       githubUrl: result?.content?.html_url || '',
+      downloadUrl: result?.content?.download_url || '',
     });
   } catch (error) {
     return jsonResponse({

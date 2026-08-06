@@ -1103,8 +1103,9 @@ export default function Admin() {
 
     try {
       const uploaded = await uploadPhotoToGitHub(file, folder);
-      setNotice(`Photo uploaded. URL added: ${uploaded.url}`);
-      return uploaded.url;
+      const photoUrl = uploaded.downloadUrl || uploaded.url;
+      setNotice(`Photo uploaded. URL added: ${photoUrl}`);
+      return photoUrl;
     } catch (err) {
       setNotice(err.message);
       throw err;

@@ -1104,7 +1104,7 @@ export default function Admin() {
 
     try {
       const uploaded = await uploadPhotoToGitHub(file, folder);
-      const photoUrl = uploaded.downloadUrl || uploaded.url;
+      const photoUrl = resolveMediaUrl(uploaded.downloadUrl || uploaded.url);
       setNotice(`Photo uploaded. URL added: ${photoUrl}`);
       return photoUrl;
     } catch (err) {

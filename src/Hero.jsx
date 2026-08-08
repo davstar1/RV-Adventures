@@ -34,8 +34,9 @@ const featuredLinks = [
 export default function Hero() {
   const { slides } = useContent();
   const slideshowPhotos = slides.filter(slide => slide.image);
-  const scrollingSlides = slideshowPhotos.length > 0
-    ? [...slideshowPhotos, ...slideshowPhotos]
+  const visibleSlides = slideshowPhotos.slice(0, 6);
+  const scrollingSlides = visibleSlides.length > 0
+    ? [...visibleSlides, ...visibleSlides]
     : [];
 
   return (
@@ -108,7 +109,7 @@ export default function Hero() {
             <div className="hero-slideshow" aria-label="Adventure photo slideshow">
               <div
                 className="hero-slideshow-track"
-                style={{ animationDuration: `${Math.max(slideshowPhotos.length * 8, 18)}s` }}
+                style={{ animationDuration: `${Math.max(visibleSlides.length * 8, 18)}s` }}
               >
                 {scrollingSlides.map((slide, index) => (
                   <figure className="hero-slide" key={`${slide.id || slide.image}-${index}`}>
@@ -116,6 +117,7 @@ export default function Hero() {
                       src={resolveMediaUrl(slide.image)}
                       alt={slide.title || 'Open Road adventure'}
                       loading={index === 0 ? 'eager' : 'lazy'}
+                      fetchPriority={index === 0 ? 'high' : 'low'}
                       decoding="async"
                     />
                     {(slide.title || slide.caption) && (

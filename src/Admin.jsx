@@ -159,7 +159,7 @@ function loadImageFromFile(file) {
   });
 }
 
-async function optimizePhoto(file, maxWidth = 1600, quality = 0.78) {
+async function optimizePhoto(file, maxWidth = 1200, quality = 0.68) {
   if (!file.type.startsWith('image/') || file.type === 'image/gif') return file;
 
   let image;

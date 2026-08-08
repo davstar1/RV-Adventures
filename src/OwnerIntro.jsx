@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, ArrowRight, Camera, Images, Play, X } from 'lucide-react';
 import { useContent } from './contentStore';
+import { resolveMediaUrl } from './mediaUrls';
 import './OwnerIntro.css';
 
 function mediaFromProfile(profile) {
@@ -31,7 +32,7 @@ function MediaDisplay({ item, title, compact = false }) {
   if (item.type === 'video') {
     return (
       <div className="owner-video-wrap">
-        <video src={item.src} controls={compact} playsInline />
+        <video src={resolveMediaUrl(item.src)} controls={compact} playsInline />
         {!compact && (
           <span className="owner-video-play">
             <Play size={34} />
@@ -41,7 +42,7 @@ function MediaDisplay({ item, title, compact = false }) {
     );
   }
 
-  return <img src={item.src} alt={title || 'Open Road RV Adventures'} loading="lazy" decoding="async" />;
+  return <img src={resolveMediaUrl(item.src)} alt={title || 'Open Road RV Adventures'} loading="lazy" decoding="async" />;
 }
 
 function AboutTile({ item, title, index, onOpen }) {
@@ -55,10 +56,10 @@ function AboutTile({ item, title, index, onOpen }) {
       aria-label={`Open About ${isVideo ? 'video' : 'photo'} ${index + 1}`}
     >
       {isVideo ? (
-        <video src={item.src} muted playsInline preload="metadata" />
+        <video src={resolveMediaUrl(item.src)} muted playsInline preload="metadata" />
       ) : (
         <img
-          src={item.src}
+          src={resolveMediaUrl(item.src)}
           alt={item.description || title || 'Open Road RV Adventures'}
           loading="lazy"
           decoding="async"

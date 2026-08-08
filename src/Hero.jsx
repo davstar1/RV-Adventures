@@ -1,5 +1,6 @@
 import { ArrowRight, Camera, ChevronDown, Compass, Map, MapPin, PlayCircle, Route } from 'lucide-react';
 import { useContent } from './contentStore';
+import { resolveMediaUrl } from './mediaUrls';
 import './Hero.css';
 
 const routeStops = [
@@ -112,7 +113,7 @@ export default function Hero() {
                 {scrollingSlides.map((slide, index) => (
                   <figure className="hero-slide" key={`${slide.id || slide.image}-${index}`}>
                     <img
-                      src={slide.image}
+                      src={resolveMediaUrl(slide.image)}
                       alt={slide.title || 'Open Road adventure'}
                       loading={index === 0 ? 'eager' : 'lazy'}
                       decoding="async"

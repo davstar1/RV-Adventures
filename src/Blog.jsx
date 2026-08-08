@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Heart, MessageCircle, Clock, Star, ExternalLink, ArrowLeft, ArrowRight, X } from 'lucide-react';
 import { categories } from './data';
 import { useContent, youtubeIdFromUrl } from './contentStore';
+import { resolveMediaUrl } from './mediaUrls';
 import NewsletterForm from './NewsletterForm';
 import './Blog.css';
 
@@ -15,7 +16,7 @@ function PostCard({ post, big = false, onOpen }) {
       <button type="button" className="card-img-link" onClick={() => onOpen(post)}>
         <div className="card-img-wrap">
           {post.image ? (
-            <img src={post.image} alt={post.title} loading="lazy" decoding="async" />
+            <img src={resolveMediaUrl(post.image)} alt={post.title} loading="lazy" decoding="async" />
           ) : (
             <div className="card-img-empty">{post.category}</div>
           )}
@@ -34,7 +35,7 @@ function PostCard({ post, big = false, onOpen }) {
         <p className="card-excerpt">{post.excerpt}</p>
         <div className="card-footer">
           {post.authorAvatar ? (
-            <img src={post.authorAvatar} alt={post.author} className="card-avatar" loading="lazy" decoding="async" />
+            <img src={resolveMediaUrl(post.authorAvatar)} alt={post.author} className="card-avatar" loading="lazy" decoding="async" />
           ) : (
             <span className="card-avatar card-avatar--initial">{String(post.author || 'O').slice(0, 1)}</span>
           )}
@@ -83,7 +84,7 @@ function AffCard({ p }) {
 
 function StoryMedia({ item, title }) {
   if (!item) return <div className="card-img-empty">No media</div>;
-  if (item.type === 'image') return <img src={item.src} alt={title} loading="lazy" decoding="async" />;
+  if (item.type === 'image') return <img src={resolveMediaUrl(item.src)} alt={title} loading="lazy" decoding="async" />;
 
   const youtubeId = youtubeIdFromUrl(item.src);
   if (youtubeId) {

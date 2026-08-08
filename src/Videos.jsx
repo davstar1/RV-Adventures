@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Play, Eye, X } from 'lucide-react';
 import { useContent } from './contentStore';
 import { youtubeIdFromUrl } from './contentStore';
+import { resolveMediaUrl } from './mediaUrls';
 import './Videos.css';
 
 export default function Videos() {
@@ -62,7 +63,7 @@ export default function Videos() {
           {videos.map(v => (
             <button key={v.id} className="vid-card" onClick={() => setOpenVideo(v)}>
               <div className="vid-thumb-wrap">
-                <img src={v.thumb} alt={v.title} loading="lazy" decoding="async" />
+                <img src={resolveMediaUrl(v.thumb)} alt={v.title} loading="lazy" decoding="async" />
                 <div className="vid-play-btn"><Play size={20} fill="white" /></div>
                 <span className="vid-duration">{v.duration}</span>
               </div>

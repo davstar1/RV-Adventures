@@ -1,5 +1,6 @@
 import { Star, ExternalLink, ArrowRight } from 'lucide-react';
 import { useContent } from './contentStore';
+import { resolveMediaUrl } from './mediaUrls';
 import './GearStrip.css';
 
 function productLink(value) {
@@ -32,7 +33,7 @@ export default function GearStrip() {
             if (!shopLink) {
               return (
                 <article key={p.id} className="gear-card gear-card--disabled">
-                  {p.image && <img className="gear-photo" src={p.image} alt={p.name} loading="lazy" decoding="async" />}
+                  {p.image && <img className="gear-photo" src={resolveMediaUrl(p.image)} alt={p.name} loading="lazy" decoding="async" />}
                   <div className="gear-card-top">
                     <span className="gear-emoji">{p.emoji}</span>
                     <span className="gear-badge">{p.badge}</span>
@@ -51,7 +52,7 @@ export default function GearStrip() {
 
             return (
               <a key={p.id} href={shopLink} className="gear-card" target="_blank" rel="noopener noreferrer sponsored">
-                {p.image && <img className="gear-photo" src={p.image} alt={p.name} loading="lazy" decoding="async" />}
+                {p.image && <img className="gear-photo" src={resolveMediaUrl(p.image)} alt={p.name} loading="lazy" decoding="async" />}
                 <div className="gear-card-top">
                   <span className="gear-emoji">{p.emoji}</span>
                   <span className="gear-badge">{p.badge}</span>

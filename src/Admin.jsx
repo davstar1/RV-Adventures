@@ -35,6 +35,7 @@ import {
   signOutAdmin,
   uploadPhotoToGitHub,
 } from './supabaseApi';
+import { resolveMediaUrl } from './mediaUrls';
 import './Admin.css';
 
 const tabs = [
@@ -321,7 +322,7 @@ function PhotoGalleryField({ value = [], onChange, label = 'Destination gallery 
         <div className="admin-gallery-preview">
           {visiblePhotos.map(({ photo, index }) => (
             <div className="admin-gallery-preview-item" key={`${photo}-${index}`}>
-              <img src={photo} alt="" />
+              <img src={resolveMediaUrl(photo)} alt="" />
               <button type="button" onClick={() => removePhoto(index)}>Remove</button>
             </div>
           ))}
@@ -447,7 +448,7 @@ function AboutMediaField({ value = [], onChange, uploadPhoto, folder }) {
                 {item.type === 'video' && item.src ? (
                   <video src={item.src} controls />
                 ) : item.src ? (
-                  <img src={item.src} alt="" />
+                  <img src={resolveMediaUrl(item.src)} alt="" />
                 ) : (
                   <div className="admin-entry-thumb admin-entry-thumb--empty">{item.type === 'video' ? 'V' : 'P'}</div>
                 )}
@@ -939,7 +940,7 @@ function EntryList({ active, entries, onEdit, onDelete }) {
           {entries.map(entry => (
             <article key={entry.id} className="admin-entry-item">
               {'image' in entry || 'thumb' in entry ? (
-                <img src={entry.image || entry.thumb} alt="" className="admin-entry-thumb" />
+                <img src={resolveMediaUrl(entry.image || entry.thumb)} alt="" className="admin-entry-thumb" />
               ) : (
                 <div className="admin-entry-thumb admin-entry-thumb--empty">{String(titleForEntry(entry)).slice(0, 1)}</div>
               )}

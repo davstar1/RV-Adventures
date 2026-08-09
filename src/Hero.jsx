@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from 'react';
 import { ArrowRight, Camera, ChevronDown, Compass, Map, MapPin, PlayCircle, Route } from 'lucide-react';
 import { useContent } from './contentStore';
 import { resolveMediaUrl } from './mediaUrls';
@@ -34,10 +35,20 @@ const featuredLinks = [
 export default function Hero() {
   const { slides } = useContent();
   const slideshowPhotos = slides.filter(slide => slide.image);
-  const visibleSlides = slideshowPhotos.slice(0, 6);
-  const scrollingSlides = visibleSlides.length > 0
-    ? [...visibleSlides, ...visibleSlides]
-    : [];
+  const visibleSlides = useMemo(() => slideshowPhotos.slice(0, 8), [slideshowPhotos]);
+  const [slideIndex, setSlideIndex] = useState(0);
+  const currentSlide = visibleSlides[slideIndex % visibleSlides.length];
+  const nextSlide = visibleSlides[(slideIndex + 1) % visibleSlides.length];
+
+  useEffect(() => {
+    if (visibleSlides.length < 2) return undefined;
+
+    const timer = window.setInterval(() => {
+      setSlideIndex(current => (current + 1) % visibleSlides.length);
+    }, 5200);
+
+    return () => window.clearInterval(timer);
+  }, [visibleSlides.length]);
 
   return (
     <section id="home" className="hero">
@@ -105,30 +116,34 @@ export default function Hero() {
             <span><Route size={16} /> Start here</span>
             <a href="#admin/slides">Add photos</a>
           </div>
-          {slideshowPhotos.length > 0 ? (
+          {currentSlide ? (
             <div className="hero-slideshow" aria-label="Adventure photo slideshow">
-              <div
-                className="hero-slideshow-track"
-                style={{ animationDuration: `${Math.max(visibleSlides.length * 8, 18)}s` }}
-              >
-                {scrollingSlides.map((slide, index) => (
-                  <figure className="hero-slide" key={`${slide.id || slide.image}-${index}`}>
-                    <img
-                      src={resolveMediaUrl(slide.image)}
-                      alt={slide.title || 'Open Road adventure'}
-                      loading={index === 0 ? 'eager' : 'lazy'}
-                      fetchPriority={index === 0 ? 'high' : 'low'}
-                      decoding="async"
-                    />
-                    {(slide.title || slide.caption) && (
-                      <figcaption>
-                        {slide.title && <strong>{slide.title}</strong>}
-                        {slide.caption && <span>{slide.caption}</span>}
-                      </figcaption>
-                    )}
-                  </figure>
-                ))}
-              </div>
+              <figure className="hero-slide hero-slide-active" key={currentSlide.id || currentSlide.image}>
+                <img
+                  src={resolveMediaUrl(currentSlide.image)}
+                  alt={currentSlide.title || 'Open Road adventure'}
+                  loading="eager"
+                  fetchPriority="high"
+                  decoding="async"
+                />
+                {(currentSlide.title || currentSlide.caption) && (
+                  <figcaption>
+                    {currentSlide.title && <strong>{currentSlide.title}</strong>}
+                    {currentSlide.caption && <span>{currentSlide.caption}</span>}
+                  </figcaption>
+                )}
+              </figure>
+              {nextSlide && nextSlide !== currentSlide && (
+                <img
+                  className="hero-slide-preload"
+                  src={resolveMediaUrl(nextSlide.image)}
+                  alt=""
+                  loading="lazy"
+                  fetchPriority="low"
+                  decoding="async"
+                  aria-hidden="true"
+                />
+              )}
             </div>
           ) : (
             <div className="hero-feature-map">

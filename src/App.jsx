@@ -13,12 +13,20 @@ import { useEffect, useState } from 'react'
 
 export default function App() {
   const [hash, setHash] = useState(window.location.hash);
+  const [showLowerSections, setShowLowerSections] = useState(Boolean(window.location.hash && window.location.hash !== '#home'));
 
   useEffect(() => {
     const updateHash = () => setHash(window.location.hash);
     window.addEventListener('hashchange', updateHash);
     return () => window.removeEventListener('hashchange', updateHash);
   }, []);
+
+  useEffect(() => {
+    if (showLowerSections) return undefined;
+
+    const timer = window.setTimeout(() => setShowLowerSections(true), 900);
+    return () => window.clearTimeout(timer);
+  }, [showLowerSections]);
 
   if (hash.startsWith('#admin')) {
     return <Admin />;
@@ -29,11 +37,15 @@ export default function App() {
       <Navbar />
       <Hero />
       <OwnerIntro />
-      <Destinations />
-      <Blog />
-      <Videos />
-      <GearStrip />
-      <Community />
+      {showLowerSections && (
+        <>
+          <Destinations />
+          <Blog />
+          <Videos />
+          <GearStrip />
+          <Community />
+        </>
+      )}
       <Footer />
     </>
   )

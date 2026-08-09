@@ -30,6 +30,9 @@ const typeMap = {
   slides: 'slide',
 };
 
+let remoteContentCache = null;
+let remoteContentRequest = null;
+
 function readStoredContent() {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
@@ -61,6 +64,47 @@ export function getContent() {
   };
 }
 
+function contentFromRows(rows) {
+  const remote = {
+    posts: rows.filter(row => row.remoteType === typeMap.posts),
+    videos: rows.filter(row => row.remoteType === typeMap.videos),
+    destinations: rows.filter(row => row.remoteType === typeMap.destinations),
+    gear: rows.filter(row => row.remoteType === typeMap.gear),
+    comments: rows.filter(row => row.remoteType === typeMap.comments),
+    about: rows.filter(row => row.remoteType === typeMap.about),
+    slides: rows.filter(row => row.remoteType === typeMap.slides),
+  };
+
+  return {
+    posts: remote.posts,
+    videos: remote.videos,
+    destinations: remote.destinations,
+    gear: remote.gear,
+    comments: remote.comments,
+    about: remote.about,
+    slides: remote.slides,
+    stored: remote,
+    remoteReady: true,
+    storageMode: 'supabase',
+  };
+}
+
+async function fetchSharedRemoteContent({ refresh = false } = {}) {
+  if (!refresh && remoteContentCache) return remoteContentCache;
+  if (!refresh && remoteContentRequest) return remoteContentRequest;
+
+  remoteContentRequest = fetchRemoteEntries()
+    .then(rows => {
+      remoteContentCache = contentFromRows(rows);
+      return remoteContentCache;
+    })
+    .finally(() => {
+      remoteContentRequest = null;
+    });
+
+  return remoteContentRequest;
+}
+
 export function useContent() {
   const [content, setContent] = useState(getContent);
 
@@ -80,44 +124,23 @@ export function useContent() {
 
     let cancelled = false;
 
-    async function loadRemoteContent() {
+    async function loadRemoteContent(refresh = false) {
       try {
-        const rows = await fetchRemoteEntries();
+        const remoteContent = await fetchSharedRemoteContent({ refresh });
         if (cancelled) return;
-
-        const remote = {
-          posts: rows.filter(row => row.remoteType === typeMap.posts),
-          videos: rows.filter(row => row.remoteType === typeMap.videos),
-          destinations: rows.filter(row => row.remoteType === typeMap.destinations),
-          gear: rows.filter(row => row.remoteType === typeMap.gear),
-          comments: rows.filter(row => row.remoteType === typeMap.comments),
-          about: rows.filter(row => row.remoteType === typeMap.about),
-          slides: rows.filter(row => row.remoteType === typeMap.slides),
-        };
-
-        setContent({
-          posts: remote.posts,
-          videos: remote.videos,
-          destinations: remote.destinations,
-          gear: remote.gear,
-          comments: remote.comments,
-          about: remote.about,
-          slides: remote.slides,
-          stored: remote,
-          remoteReady: true,
-          storageMode: 'supabase',
-        });
+        setContent(remoteContent);
       } catch {
         if (!cancelled) setContent(current => ({ ...current, remoteReady: false, storageMode: 'supabase-error' }));
       }
     }
 
     loadRemoteContent();
-    window.addEventListener(CHANGE_EVENT, loadRemoteContent);
+    const refreshRemoteContent = () => loadRemoteContent(true);
+    window.addEventListener(CHANGE_EVENT, refreshRemoteContent);
 
     return () => {
       cancelled = true;
-      window.removeEventListener(CHANGE_EVENT, loadRemoteContent);
+      window.removeEventListener(CHANGE_EVENT, refreshRemoteContent);
     };
   }, []);
 
@@ -127,6 +150,7 @@ export function useContent() {
 export async function addContentItem(type, item) {
   if (isSupabaseConfigured) {
     await insertRemoteEntry(typeMap[type], item);
+    remoteContentCache = null;
     window.dispatchEvent(new Event(CHANGE_EVENT));
     return;
   }
@@ -147,6 +171,7 @@ export function addLocalContentItem(type, item) {
 export async function updateContentItem(type, id, item) {
   if (isSupabaseConfigured) {
     await updateRemoteEntry(id, item);
+    remoteContentCache = null;
     window.dispatchEvent(new Event(CHANGE_EVENT));
     return;
   }
@@ -165,6 +190,7 @@ export async function updateContentItem(type, id, item) {
 export async function deleteContentItem(type, id) {
   if (isSupabaseConfigured) {
     await deleteRemoteEntry(id);
+    remoteContentCache = null;
     window.dispatchEvent(new Event(CHANGE_EVENT));
     return;
   }

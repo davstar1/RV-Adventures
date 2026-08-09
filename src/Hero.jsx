@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowRight, Camera, ChevronDown, Compass, Map, MapPin, PlayCircle, Route } from 'lucide-react';
+import { ArrowRight, Camera, ChevronDown, Compass, Map, MapPin, PlayCircle } from 'lucide-react';
 import { useContent } from './contentStore';
 import { resolveMediaUrl } from './mediaUrls';
 import './Hero.css';
@@ -85,8 +85,8 @@ export default function Hero() {
           </span>
 
           <h1 className="hero-title">
-            Come ride along
-            <em>with Open Road.</em>
+            Come Ride Along
+            <em>The Open Road With Us.</em>
           </h1>
 
           <p className="hero-lead">
@@ -112,10 +112,6 @@ export default function Hero() {
         </div>
 
         <div className="hero-feature" aria-label="Featured site sections">
-          <div className="hero-feature-top">
-            <span><Route size={16} /> Start here</span>
-            <a href="#admin/slides">Add photos</a>
-          </div>
           {currentSlide ? (
             <div className="hero-slideshow" aria-label="Adventure photo slideshow">
               <figure className="hero-slide hero-slide-active" key={currentSlide.id || currentSlide.image}>

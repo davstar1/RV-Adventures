@@ -76,6 +76,8 @@ const emptyForms = {
   about: {
     title: '',
     body: '',
+    storyTitle: '',
+    storyBody: '',
     image: '',
     gallery: [],
     media: [],
@@ -551,6 +553,12 @@ function AdminForm({ active, form, setForm, onSave, isEditing, uploadPhoto }) {
         <Field label="About us story">
           <textarea value={form.body} rows={7} placeholder="Write your story, why you travel, and what visitors can expect from the site." onChange={e => patch({ body: e.target.value })} />
         </Field>
+        <Field label="Our Story title">
+          <input value={form.storyTitle} placeholder="How we met" onChange={e => patch({ storyTitle: e.target.value })} />
+        </Field>
+        <Field label="Our Story">
+          <textarea value={form.storyBody} rows={8} placeholder="Write the story of how you met, what pulled you toward the road, and the moments that shaped your journey together." onChange={e => patch({ storyBody: e.target.value })} />
+        </Field>
         <AboutMediaField value={form.media} onChange={media => patch({ media })} uploadPhoto={uploadPhoto} folder={uploadFolder} />
         <button className="admin-save" onClick={onSave}><Plus size={16} /> {actionLabel('About Section')}</button>
       </div>
@@ -738,6 +746,8 @@ function formFromEntry(active, entry) {
     return {
       title: entry.title || '',
       body: entry.body || '',
+      storyTitle: entry.storyTitle || '',
+      storyBody: entry.storyBody || '',
       image: '',
       gallery: [],
       media: mediaFromAboutEntry(entry),
@@ -841,8 +851,10 @@ function buildPayload(active, form) {
       : (fallbackPhoto ? [{ type: 'image', src: fallbackPhoto, description: '' }] : []);
     const title = form.title.trim() || 'A note from the road';
     const body = form.body.trim();
+    const storyTitle = form.storyTitle.trim();
+    const storyBody = form.storyBody.trim();
 
-    if (!body && mergedMedia.length === 0) {
+    if (!body && !storyBody && mergedMedia.length === 0) {
       return { error: 'Add an About story, photo URL, or video URL first.' };
     }
 
@@ -850,6 +862,8 @@ function buildPayload(active, form) {
       payload: {
         title,
         body,
+        storyTitle,
+        storyBody,
         image: form.image || mergedMedia.find(item => item.type === 'image')?.src || '',
         gallery: mergedMedia.filter(item => item.type === 'image').map(item => item.src),
         media: mergedMedia,

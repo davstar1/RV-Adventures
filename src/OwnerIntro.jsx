@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowLeft, ArrowRight, Camera, Images, Play, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Camera, ChevronDown, Images, Play, X } from 'lucide-react';
 import { useContent } from './contentStore';
 import { resolveMediaUrl } from './mediaUrls';
 import './OwnerIntro.css';
@@ -76,8 +76,11 @@ export default function OwnerIntro() {
   const { about } = useContent();
   const profile = about[0];
   const media = useMemo(() => mediaFromProfile(profile), [profile]);
+  const storyBody = profile?.storyBody?.trim();
+  const storyTitle = profile?.storyTitle?.trim() || 'Our Story';
   const [index, setIndex] = useState(0);
   const [modalOpen, setModalOpen] = useState(false);
+  const [storyOpen, setStoryOpen] = useState(false);
   const current = media[index];
 
   const previous = () => setIndex(currentIndex => (currentIndex - 1 + media.length) % media.length);
@@ -138,6 +141,30 @@ export default function OwnerIntro() {
           )}
         </div>
       </div>
+
+      {storyBody && (
+        <div className="section-wrap owner-story-wrap">
+          <article className={`owner-story ${storyOpen ? 'owner-story--open' : ''}`}>
+            <button
+              type="button"
+              className="owner-story-toggle"
+              onClick={() => setStoryOpen(open => !open)}
+              aria-expanded={storyOpen}
+            >
+              <span>
+                <span className="eyebrow">Our Story</span>
+                <strong>{storyTitle}</strong>
+              </span>
+              <ChevronDown size={24} />
+            </button>
+            {storyOpen && (
+              <div className="owner-story-body">
+                <p>{storyBody}</p>
+              </div>
+            )}
+          </article>
+        </div>
+      )}
 
       {modalOpen && current && (
         <div className="owner-modal" role="dialog" aria-modal="true" aria-label="About media viewer">

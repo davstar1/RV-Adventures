@@ -87,7 +87,7 @@ const emptyForms = {
     title: '',
     images: [],
     caption: '',
-    musicUrl: '',
+    musicUrls: [],
   },
   videos: {
     title: '',
@@ -351,15 +351,21 @@ function PhotoGalleryField({ value = [], onChange, label = 'Destination gallery 
   );
 }
 
-function AudioField({ value = '', onChange, uploadPhoto, folder }) {
+function AudioField({ value = [], onChange, uploadPhoto, folder }) {
+  const songs = Array.isArray(value) ? value : [value].filter(Boolean);
+  const addSongs = nextSongs => onChange([
+    ...songs.filter(song => song.trim()),
+    ...nextSongs.filter(Boolean),
+  ]);
+
   return (
     <div className="admin-photo-field">
-      <Field label="Slideshow music URL">
-        <input
-          type="url"
-          value={value}
-          placeholder="Paste an MP3/M4A/WAV URL or upload music"
-          onChange={e => onChange(e.target.value)}
+      <Field label="Slideshow music URLs">
+        <textarea
+          value={songs.join('\n')}
+          rows={4}
+          placeholder="Paste one MP3/M4A/WAV URL per line or upload music"
+          onChange={e => onChange(e.target.value.split('\n'))}
         />
       </Field>
       <label className="admin-upload">
@@ -368,9 +374,12 @@ function AudioField({ value = '', onChange, uploadPhoto, folder }) {
         <input
           type="file"
           accept="audio/*"
+          multiple
           onChange={async e => {
-            const file = e.target.files?.[0];
-            if (file) onChange(await uploadOrReadAudio(file, uploadPhoto, folder));
+            const files = Array.from(e.target.files || []);
+            if (files.length) {
+              addSongs(await Promise.all(files.map(file => uploadOrReadAudio(file, uploadPhoto, folder))));
+            }
             e.target.value = '';
           }}
         />
@@ -633,7 +642,7 @@ function AdminForm({ active, form, setForm, onSave, isEditing, uploadPhoto }) {
         <Field label="Caption">
           <textarea value={form.caption} rows={4} placeholder="Optional short note about this photo." onChange={e => patch({ caption: e.target.value })} />
         </Field>
-        <AudioField value={form.musicUrl} onChange={musicUrl => patch({ musicUrl })} uploadPhoto={uploadPhoto} folder="music" />
+        <AudioField value={form.musicUrls} onChange={musicUrls => patch({ musicUrls })} uploadPhoto={uploadPhoto} folder="music" />
         <button className="admin-save" onClick={onSave}><Plus size={16} /> {actionLabel('Slideshow Entry')}</button>
       </div>
     );
@@ -828,9 +837,9 @@ function formFromEntry(active, entry) {
   if (active === 'slides') {
     return {
       title: entry.title || '',
-      images: cleanUrlList([entry.image]),
+      images: cleanUrlList(entry.images || [entry.image]),
       caption: entry.caption || '',
-      musicUrl: entry.musicUrl || '',
+      musicUrls: cleanUrlList(entry.musicUrls || [entry.musicUrl]),
     };
   }
 
@@ -951,30 +960,19 @@ function buildPayload(active, form) {
 
   if (active === 'slides') {
     const images = cleanUrlList(form.images);
-    const musicUrl = String(form.musicUrl || '').trim();
+    const musicUrls = cleanUrlList(form.musicUrls);
 
-    if (images.length === 0 && !musicUrl) return { error: 'Add at least one photo URL or upload music first.' };
-
-    if (images.length === 0) {
-      return {
-        payload: {
-          title: form.title || 'Slideshow music',
-          image: '',
-          caption: form.caption || '',
-          musicUrl,
-        },
-      };
-    }
+    if (images.length === 0 && musicUrls.length === 0) return { error: 'Add at least one photo URL or upload music first.' };
 
     return {
-      payloads: images.map((image, index) => ({
-        title: images.length > 1
-          ? `${form.title || 'Adventure photo'} ${index + 1}`
-          : form.title || 'Adventure photo',
-        image,
+      payload: {
+        title: form.title || (images.length > 0 ? 'Adventure photo set' : 'Slideshow music'),
+        image: images[0] || '',
+        images,
         caption: form.caption || '',
-        musicUrl,
-      })),
+        musicUrl: musicUrls[0] || '',
+        musicUrls,
+      },
     };
   }
 

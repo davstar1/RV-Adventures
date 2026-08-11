@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowRight, Camera, ChevronDown, Compass, Map, MapPin, PlayCircle } from 'lucide-react';
 import { useContent } from './contentStore';
 import { resolveMediaUrl } from './mediaUrls';
@@ -34,12 +34,36 @@ const featuredLinks = [
 
 export default function Hero() {
   const { slides } = useContent();
-  const slideshowPhotos = slides.filter(slide => slide.image);
+  const slideshowPhotos = useMemo(() => slides.flatMap(slide => {
+    const images = Array.from(new Set([
+      ...(Array.isArray(slide.images) ? slide.images : []),
+      slide.image,
+    ].map(image => String(image || '').trim()).filter(Boolean)));
+
+    return images.map((image, index) => ({
+      ...slide,
+      image,
+      id: `${slide.id || slide.image || image}-${index}`,
+      title: index === 0 ? slide.title : slide.title || 'Open Road adventure',
+    }));
+  }), [slides]);
   const visibleSlides = useMemo(() => slideshowPhotos.slice(0, 8), [slideshowPhotos]);
+  const musicUrls = useMemo(() => Array.from(new Set(
+    slides.flatMap(slide => [
+      ...(Array.isArray(slide.musicUrls) ? slide.musicUrls : []),
+      slide.musicUrl,
+    ])
+      .map(url => String(url || '').trim())
+      .filter(Boolean),
+  )), [slides]);
   const [slideIndex, setSlideIndex] = useState(0);
+  const [songIndex, setSongIndex] = useState(0);
+  const [playlistStarted, setPlaylistStarted] = useState(false);
+  const audioRef = useRef(null);
+  const activeSongIndex = musicUrls.length > 0 ? songIndex % musicUrls.length : 0;
   const currentSlide = visibleSlides[slideIndex % visibleSlides.length];
   const nextSlide = visibleSlides[(slideIndex + 1) % visibleSlides.length];
-  const musicUrl = currentSlide?.musicUrl || slides.find(slide => slide.musicUrl)?.musicUrl || '';
+  const currentSong = musicUrls[activeSongIndex] || '';
 
   useEffect(() => {
     if (visibleSlides.length < 2) return undefined;
@@ -50,6 +74,14 @@ export default function Hero() {
 
     return () => window.clearInterval(timer);
   }, [visibleSlides.length]);
+
+  useEffect(() => {
+    if (!playlistStarted || !currentSong || !audioRef.current) return;
+
+    audioRef.current.play().catch(() => {
+      setPlaylistStarted(false);
+    });
+  }, [currentSong, playlistStarted]);
 
   return (
     <section id="home" className="hero">
@@ -113,7 +145,7 @@ export default function Hero() {
         </div>
 
         <div className="hero-feature" aria-label="Featured site sections">
-          {currentSlide || musicUrl ? (
+          {currentSlide || currentSong ? (
             <div className="hero-slideshow" aria-label="Adventure photo slideshow">
               {currentSlide ? (
                 <figure className="hero-slide hero-slide-active" key={currentSlide.id || currentSlide.image}>
@@ -148,10 +180,27 @@ export default function Hero() {
                   aria-hidden="true"
                 />
               )}
-              {musicUrl && (
+              {currentSong && (
                 <div className="hero-music-player">
-                  <span>Road soundtrack</span>
-                  <audio src={resolveMediaUrl(musicUrl)} controls preload="none" />
+                  <span>Road soundtrack {musicUrls.length > 1 ? `${activeSongIndex + 1}/${musicUrls.length}` : ''}</span>
+                  <audio
+                    ref={audioRef}
+                    src={resolveMediaUrl(currentSong)}
+                    controls
+                    preload="none"
+                    onPlay={() => setPlaylistStarted(true)}
+                    onPause={event => {
+                      if (!event.currentTarget.ended) {
+                        setPlaylistStarted(false);
+                      }
+                    }}
+                    onEnded={() => {
+                      if (musicUrls.length > 1) {
+                        setPlaylistStarted(true);
+                        setSongIndex(current => (current + 1) % musicUrls.length);
+                      }
+                    }}
+                  />
                 </div>
               )}
             </div>

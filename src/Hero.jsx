@@ -118,8 +118,14 @@ export default function Hero() {
           </span>
 
           <h1 className="hero-title">
-            Come Ride Along
-            <em>The Open Road With Us.</em>
+            <span className="hero-title-glow" aria-hidden="true">
+              <span>Come Ride Along</span>
+              <em>The Open Road With Us.</em>
+            </span>
+            <span className="hero-title-copy">
+              <span>Come Ride Along</span>
+              <em>The Open Road With Us.</em>
+            </span>
           </h1>
 
           <p className="hero-lead">

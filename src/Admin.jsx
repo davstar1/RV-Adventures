@@ -620,7 +620,7 @@ function AdminForm({ active, form, setForm, onSave, isEditing, uploadPhoto }) {
           <textarea value={form.caption} rows={4} placeholder="Optional short note about this photo." onChange={e => patch({ caption: e.target.value })} />
         </Field>
         <AudioField value={form.musicUrl} onChange={musicUrl => patch({ musicUrl })} uploadPhoto={uploadPhoto} folder="music" />
-        <button className="admin-save" onClick={onSave}><Plus size={16} /> {actionLabel('Slideshow Photo')}</button>
+        <button className="admin-save" onClick={onSave}><Plus size={16} /> {actionLabel('Slideshow Entry')}</button>
       </div>
     );
   }
@@ -930,8 +930,20 @@ function buildPayload(active, form) {
 
   if (active === 'slides') {
     const images = cleanUrlList(form.images);
+    const musicUrl = String(form.musicUrl || '').trim();
 
-    if (images.length === 0) return { error: 'Add at least one photo URL or upload a photo first.' };
+    if (images.length === 0 && !musicUrl) return { error: 'Add at least one photo URL or upload music first.' };
+
+    if (images.length === 0) {
+      return {
+        payload: {
+          title: form.title || 'Slideshow music',
+          image: '',
+          caption: form.caption || '',
+          musicUrl,
+        },
+      };
+    }
 
     return {
       payloads: images.map((image, index) => ({
@@ -940,7 +952,7 @@ function buildPayload(active, form) {
           : form.title || 'Adventure photo',
         image,
         caption: form.caption || '',
-        musicUrl: form.musicUrl || '',
+        musicUrl,
       })),
     };
   }

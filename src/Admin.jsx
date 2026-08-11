@@ -267,7 +267,7 @@ function photoFolderForActive(active, form = {}) {
   return 'uploads';
 }
 
-function PhotoField({ label, value, onChange, uploadPhoto, folder }) {
+function PhotoField({ label, value, onChange, uploadPhoto, folder, onAdditionalPhotos }) {
   return (
     <div className="admin-photo-field">
       <Field label={label}>
@@ -280,13 +280,20 @@ function PhotoField({ label, value, onChange, uploadPhoto, folder }) {
       </Field>
       <label className="admin-upload">
         <Camera size={16} />
-        Upload Photo
+        Upload Photo(s)
         <input
           type="file"
           accept="image/*"
+          multiple
           onChange={async e => {
-            const file = e.target.files?.[0];
-            if (file) onChange(await uploadOrReadPhoto(file, uploadPhoto, folder));
+            const files = Array.from(e.target.files || []);
+            if (files.length) {
+              const uploaded = await Promise.all(files.map(file => uploadOrReadPhoto(file, uploadPhoto, folder)));
+              onChange(uploaded[0]);
+              if (uploaded.length > 1 && onAdditionalPhotos) {
+                onAdditionalPhotos(uploaded.slice(1));
+              }
+            }
             e.target.value = '';
           }}
         />
@@ -536,7 +543,14 @@ function AdminForm({ active, form, setForm, onSave, isEditing, uploadPhoto }) {
         <Field label="Read time">
           <input value={form.readTime} placeholder="8 min" onChange={e => patch({ readTime: e.target.value })} />
         </Field>
-        <PhotoField label="Story photo" value={form.image} onChange={image => patch({ image })} uploadPhoto={uploadPhoto} folder={uploadFolder} />
+        <PhotoField
+          label="Story photo"
+          value={form.image}
+          onChange={image => patch({ image })}
+          uploadPhoto={uploadPhoto}
+          folder={uploadFolder}
+          onAdditionalPhotos={photos => patch({ gallery: [...(form.gallery || []), ...photos] })}
+        />
         <PhotoGalleryField
           label={`${postLabel} gallery photo URLs`}
           value={form.gallery}
@@ -634,7 +648,14 @@ function AdminForm({ active, form, setForm, onSave, isEditing, uploadPhoto }) {
         <Field label="Number of guides">
           <input type="number" min="1" value={form.count} onChange={e => patch({ count: e.target.value })} />
         </Field>
-        <PhotoField label="Destination photo" value={form.image} onChange={image => patch({ image })} uploadPhoto={uploadPhoto} folder={uploadFolder} />
+        <PhotoField
+          label="Destination photo"
+          value={form.image}
+          onChange={image => patch({ image })}
+          uploadPhoto={uploadPhoto}
+          folder={uploadFolder}
+          onAdditionalPhotos={photos => patch({ gallery: [...(form.gallery || []), ...photos] })}
+        />
         <Field label="Destination description">
           <textarea value={form.description} rows={5} onChange={e => patch({ description: e.target.value })} />
         </Field>

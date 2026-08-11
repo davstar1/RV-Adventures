@@ -39,6 +39,7 @@ export default function Hero() {
   const [slideIndex, setSlideIndex] = useState(0);
   const currentSlide = visibleSlides[slideIndex % visibleSlides.length];
   const nextSlide = visibleSlides[(slideIndex + 1) % visibleSlides.length];
+  const musicUrl = currentSlide?.musicUrl || visibleSlides.find(slide => slide.musicUrl)?.musicUrl || '';
 
   useEffect(() => {
     if (visibleSlides.length < 2) return undefined;
@@ -139,6 +140,12 @@ export default function Hero() {
                   decoding="async"
                   aria-hidden="true"
                 />
+              )}
+              {musicUrl && (
+                <div className="hero-music-player">
+                  <span>Road soundtrack</span>
+                  <audio src={resolveMediaUrl(musicUrl)} controls preload="none" />
+                </div>
               )}
             </div>
           ) : (

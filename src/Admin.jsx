@@ -8,6 +8,7 @@ import {
   LogOut,
   MapPin,
   MessageCircle,
+  Music,
   Package,
   PenLine,
   Play,
@@ -86,6 +87,7 @@ const emptyForms = {
     title: '',
     images: [],
     caption: '',
+    musicUrl: '',
   },
   videos: {
     title: '',
@@ -239,6 +241,14 @@ async function uploadOrReadPhoto(file, uploadPhoto, folder) {
 
 const readMediaFile = readPhoto;
 
+async function uploadOrReadAudio(file, uploadPhoto, folder) {
+  if (uploadPhoto) {
+    return uploadPhoto(file, folder);
+  }
+
+  return readPhoto(file);
+}
+
 function photoFolderForActive(active, form = {}) {
   if (active === 'slides') return 'slideshow';
   if (active === 'about') return 'about';
@@ -330,6 +340,34 @@ function PhotoGalleryField({ value = [], onChange, label = 'Destination gallery 
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function AudioField({ value = '', onChange, uploadPhoto, folder }) {
+  return (
+    <div className="admin-photo-field">
+      <Field label="Slideshow music URL">
+        <input
+          type="url"
+          value={value}
+          placeholder="Paste an MP3/M4A/WAV URL or upload music"
+          onChange={e => onChange(e.target.value)}
+        />
+      </Field>
+      <label className="admin-upload">
+        <Music size={16} />
+        Upload Music
+        <input
+          type="file"
+          accept="audio/*"
+          onChange={async e => {
+            const file = e.target.files?.[0];
+            if (file) onChange(await uploadOrReadAudio(file, uploadPhoto, folder));
+            e.target.value = '';
+          }}
+        />
+      </label>
     </div>
   );
 }
@@ -581,6 +619,7 @@ function AdminForm({ active, form, setForm, onSave, isEditing, uploadPhoto }) {
         <Field label="Caption">
           <textarea value={form.caption} rows={4} placeholder="Optional short note about this photo." onChange={e => patch({ caption: e.target.value })} />
         </Field>
+        <AudioField value={form.musicUrl} onChange={musicUrl => patch({ musicUrl })} uploadPhoto={uploadPhoto} folder="music" />
         <button className="admin-save" onClick={onSave}><Plus size={16} /> {actionLabel('Slideshow Photo')}</button>
       </div>
     );
@@ -770,6 +809,7 @@ function formFromEntry(active, entry) {
       title: entry.title || '',
       images: cleanUrlList([entry.image]),
       caption: entry.caption || '',
+      musicUrl: entry.musicUrl || '',
     };
   }
 
@@ -900,6 +940,7 @@ function buildPayload(active, form) {
           : form.title || 'Adventure photo',
         image,
         caption: form.caption || '',
+        musicUrl: form.musicUrl || '',
       })),
     };
   }
@@ -1114,12 +1155,13 @@ export default function Admin() {
 
   const uploadAdminPhoto = async (file, folder) => {
     setUploadingPhoto(true);
+    const mediaLabel = file.type.startsWith('audio/') ? 'Music' : 'Photo';
     setNotice(`Uploading ${file.name} to GitHub...`);
 
     try {
       const uploaded = await uploadPhotoToGitHub(file, folder);
       const photoUrl = resolveMediaUrl(uploaded.downloadUrl || uploaded.url);
-      setNotice(`Photo uploaded. URL added: ${photoUrl}`);
+      setNotice(`${mediaLabel} uploaded. URL added: ${photoUrl}`);
       return photoUrl;
     } catch (err) {
       setNotice(err.message);

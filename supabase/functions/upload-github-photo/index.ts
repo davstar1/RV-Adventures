@@ -23,20 +23,26 @@ function cleanSegment(value: string, fallback: string) {
     .slice(0, 70) || fallback;
 }
 
-function shortPhotoName(extension: string) {
+function shortMediaName(extension: string, prefix = 'p') {
   const randomPart = crypto.randomUUID().replace(/-/g, '').slice(0, 8);
-  return `p-${randomPart}.${extension}`;
+  return `${prefix}-${randomPart}.${extension}`;
 }
 
 function extensionFor(file: File) {
   const fromName = file.name.match(/\.([a-z0-9]+)$/i)?.[1]?.toLowerCase();
-  if (fromName && ['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(fromName)) {
+  if (fromName && ['jpg', 'jpeg', 'png', 'webp', 'gif', 'mp3', 'm4a', 'aac', 'wav', 'ogg', 'webm'].includes(fromName)) {
     return fromName === 'jpeg' ? 'jpg' : fromName;
   }
 
   if (file.type.includes('png')) return 'png';
   if (file.type.includes('webp')) return 'webp';
   if (file.type.includes('gif')) return 'gif';
+  if (file.type.includes('mpeg')) return 'mp3';
+  if (file.type.includes('mp4')) return 'm4a';
+  if (file.type.includes('aac')) return 'aac';
+  if (file.type.includes('wav')) return 'wav';
+  if (file.type.includes('ogg')) return 'ogg';
+  if (file.type.includes('webm')) return 'webm';
   return 'jpg';
 }
 
@@ -80,15 +86,18 @@ Deno.serve(async request => {
       .join('/');
 
     if (!(file instanceof File)) {
-      return jsonResponse({ error: 'Choose a photo to upload first.' }, 400);
-    }
-
-    if (!file.type.startsWith('image/')) {
-      return jsonResponse({ error: 'Only image uploads are supported.' }, 400);
+      return jsonResponse({ error: 'Choose a file to upload first.' }, 400);
     }
 
     const extension = extensionFor(file);
-    const uniqueName = shortPhotoName(extension);
+    const isImage = file.type.startsWith('image/') || ['jpg', 'png', 'webp', 'gif'].includes(extension);
+    const isAudio = file.type.startsWith('audio/') || ['mp3', 'm4a', 'aac', 'wav', 'ogg', 'webm'].includes(extension);
+
+    if (!isImage && !isAudio) {
+      return jsonResponse({ error: 'Only image and audio uploads are supported.' }, 400);
+    }
+
+    const uniqueName = shortMediaName(extension, isAudio ? 'm' : 'p');
     const repoPath = `public/photos/${folder || 'uploads'}/${uniqueName}`;
     const bytes = new Uint8Array(await file.arrayBuffer());
     const content = base64FromBytes(bytes);
@@ -102,7 +111,7 @@ Deno.serve(async request => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        message: `Upload website photo ${uniqueName}`,
+        message: `Upload website media ${uniqueName}`,
         content,
         branch,
       }),

@@ -113,24 +113,31 @@ export default function Hero() {
         </div>
 
         <div className="hero-feature" aria-label="Featured site sections">
-          {currentSlide ? (
+          {currentSlide || musicUrl ? (
             <div className="hero-slideshow" aria-label="Adventure photo slideshow">
-              <figure className="hero-slide hero-slide-active" key={currentSlide.id || currentSlide.image}>
-                <img
-                  src={resolveMediaUrl(currentSlide.image)}
-                  alt={currentSlide.title || 'Open Road adventure'}
-                  loading="eager"
-                  fetchPriority="high"
-                  decoding="async"
-                />
-                {(currentSlide.title || currentSlide.caption) && (
-                  <figcaption>
-                    {currentSlide.title && <strong>{currentSlide.title}</strong>}
-                    {currentSlide.caption && <span>{currentSlide.caption}</span>}
-                  </figcaption>
-                )}
-              </figure>
-              {nextSlide && nextSlide !== currentSlide && (
+              {currentSlide ? (
+                <figure className="hero-slide hero-slide-active" key={currentSlide.id || currentSlide.image}>
+                  <img
+                    src={resolveMediaUrl(currentSlide.image)}
+                    alt={currentSlide.title || 'Open Road adventure'}
+                    loading="eager"
+                    fetchPriority="high"
+                    decoding="async"
+                  />
+                  {(currentSlide.title || currentSlide.caption) && (
+                    <figcaption>
+                      {currentSlide.title && <strong>{currentSlide.title}</strong>}
+                      {currentSlide.caption && <span>{currentSlide.caption}</span>}
+                    </figcaption>
+                  )}
+                </figure>
+              ) : (
+                <div className="hero-slide hero-slide-empty">
+                  <Compass size={76} strokeWidth={1.1} />
+                  <span>Road soundtrack loaded</span>
+                </div>
+              )}
+              {currentSlide && nextSlide && nextSlide !== currentSlide && (
                 <img
                   className="hero-slide-preload"
                   src={resolveMediaUrl(nextSlide.image)}

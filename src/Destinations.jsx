@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, ArrowRight, Images, MapPin, X } from 'lucide-react';
 import { useContent, youtubeIdFromUrl } from './contentStore';
 import { resolveMediaUrl } from './mediaUrls';
+import PhotoLike from './PhotoLike';
 import './Destinations.css';
 
 function DestinationMedia({ item, name }) {
@@ -124,6 +125,9 @@ export default function Destinations() {
                 </button>
               )}
               <DestinationMedia item={media[photoIndex]} name={openDestination.name} />
+              {media[photoIndex]?.type === 'image' && (
+                <PhotoLike id={media[photoIndex].src} className="photo-like--floating" />
+              )}
               {media.length > 1 && (
                 <button className="dest-gallery-arrow dest-gallery-arrow--right" type="button" onClick={showNext} aria-label="Next photo">
                   <ArrowRight size={22} />

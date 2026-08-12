@@ -4,6 +4,7 @@ import { categories } from './data';
 import { useContent, youtubeIdFromUrl } from './contentStore';
 import { resolveMediaUrl } from './mediaUrls';
 import NewsletterForm from './NewsletterForm';
+import PhotoLike from './PhotoLike';
 import './Blog.css';
 
 /* ── Post Card ── */
@@ -224,6 +225,9 @@ export default function Blog() {
             </button>
             <div className="story-modal-image">
               <StoryMedia item={openMedia[photoIndex]} title={openPost.title} />
+              {openMedia[photoIndex]?.type === 'image' && (
+                <PhotoLike id={openMedia[photoIndex].src} className="photo-like--floating" />
+              )}
               {openMedia.length > 1 && (
                 <>
                   <button type="button" className="story-modal-arrow story-modal-arrow--left" onClick={previousPhoto} aria-label="Previous photo">

@@ -1,0 +1,46 @@
+.photo-like {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 8px 11px;
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 999px;
+  color: rgba(255,255,255,.9);
+  background: rgba(6,10,15,.7);
+  box-shadow: 0 10px 26px rgba(0,0,0,.28);
+  backdrop-filter: blur(12px);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .02em;
+  transition: transform .2s ease, border-color .2s ease, background .2s ease, color .2s ease;
+}
+
+.photo-like:hover,
+.photo-like:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(255,255,255,.36);
+  background: rgba(12,18,25,.86);
+  outline: none;
+}
+
+.photo-like--active {
+  border-color: rgba(255,92,122,.62);
+  color: #ff6d8d;
+  background: rgba(70,16,28,.84);
+  box-shadow: 0 10px 26px rgba(255,92,122,.22);
+}
+
+.photo-like--floating {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 5;
+}
+
+.photo-like--lower {
+  top: auto;
+  bottom: 14px;
+}

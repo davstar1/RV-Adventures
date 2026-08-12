@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, ArrowRight, Camera, ChevronDown, Images, Play, X } from 'lucide-react';
 import { useContent } from './contentStore';
 import { resolveMediaUrl } from './mediaUrls';
+import PhotoLike from './PhotoLike';
 import './OwnerIntro.css';
 
 function mediaFromProfile(profile) {
@@ -175,6 +176,9 @@ export default function OwnerIntro() {
             </button>
             <div className="owner-modal-media">
               <MediaDisplay item={current} title={profile?.title} compact />
+              {current.type !== 'video' && (
+                <PhotoLike id={current.src} className="photo-like--floating" />
+              )}
               {media.length > 1 && (
                 <>
                   <button type="button" className="owner-modal-arrow owner-modal-arrow--left" onClick={previous} aria-label="Previous About media">

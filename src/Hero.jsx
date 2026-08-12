@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowRight, Camera, ChevronDown, Compass, Map, MapPin, PlayCircle, Shuffle, SkipBack, SkipForward } from 'lucide-react';
 import { useContent } from './contentStore';
 import { resolveMediaUrl } from './mediaUrls';
+import PhotoLike from './PhotoLike';
 import './Hero.css';
 
 const routeStops = [
@@ -221,6 +222,7 @@ export default function Hero() {
                     fetchPriority="high"
                     decoding="async"
                   />
+                  <PhotoLike id={currentSlide.image} className="photo-like--floating" />
                 </figure>
               ) : (
                 <div className="hero-slide hero-slide-empty">

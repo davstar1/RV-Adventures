@@ -313,6 +313,14 @@ function PhotoGalleryField({ value = [], onChange, label = 'Destination gallery 
     ...nextPhotos.filter(Boolean),
   ]);
   const removePhoto = index => onChange(photos.filter((_, photoIndex) => photoIndex !== index));
+  const movePhoto = (fromIndex, toIndex) => {
+    if (fromIndex === toIndex) return;
+
+    const nextPhotos = [...photos];
+    const [movedPhoto] = nextPhotos.splice(fromIndex, 1);
+    nextPhotos.splice(toIndex, 0, movedPhoto);
+    onChange(nextPhotos);
+  };
 
   return (
     <div className="admin-gallery-field">
@@ -341,7 +349,25 @@ function PhotoGalleryField({ value = [], onChange, label = 'Destination gallery 
       {visiblePhotos.length > 0 && (
         <div className="admin-gallery-preview">
           {visiblePhotos.map(({ photo, index }) => (
-            <div className="admin-gallery-preview-item" key={`${photo}-${index}`}>
+            <div
+              className="admin-gallery-preview-item"
+              key={`${photo}-${index}`}
+              draggable
+              onDragStart={e => {
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', String(index));
+              }}
+              onDragOver={e => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+              }}
+              onDrop={e => {
+                e.preventDefault();
+                const fromIndex = Number(e.dataTransfer.getData('text/plain'));
+                if (Number.isInteger(fromIndex)) movePhoto(fromIndex, index);
+              }}
+            >
+              <span className="admin-gallery-drag-handle">Drag to reorder</span>
               <img src={resolveMediaUrl(photo)} alt="" />
               <button type="button" onClick={() => removePhoto(index)}>Remove</button>
             </div>

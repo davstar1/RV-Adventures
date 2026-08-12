@@ -400,6 +400,30 @@
   border: 1.5px solid rgba(255,255,255,.12);
   border-radius: var(--r-sm);
   background: #2c3943;
+  cursor: grab;
+  transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+
+.admin-gallery-preview-item:active {
+  cursor: grabbing;
+}
+
+.admin-gallery-preview-item:hover {
+  border-color: rgba(232,137,12,.55);
+  box-shadow: 0 10px 22px rgba(0,0,0,.22);
+  transform: translateY(-1px);
+}
+
+.admin-gallery-drag-handle {
+  display: block;
+  padding: 6px 8px;
+  color: rgba(255,255,255,.68);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-align: center;
+  text-transform: uppercase;
+  background: rgba(255,255,255,.06);
 }
 
 .admin-gallery-preview-item img {

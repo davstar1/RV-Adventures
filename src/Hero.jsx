@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowRight, Camera, ChevronDown, Compass, Map, MapPin, PlayCircle } from 'lucide-react';
+import { ArrowRight, Camera, ChevronDown, Compass, Map, MapPin, PlayCircle, Shuffle, SkipBack, SkipForward } from 'lucide-react';
 import { useContent } from './contentStore';
 import { resolveMediaUrl } from './mediaUrls';
 import './Hero.css';
@@ -60,11 +60,30 @@ export default function Hero() {
   const [songIndex, setSongIndex] = useState(0);
   const [playlistStarted, setPlaylistStarted] = useState(false);
   const [musicPlaying, setMusicPlaying] = useState(false);
+  const [shuffleMusic, setShuffleMusic] = useState(false);
   const audioRef = useRef(null);
   const activeSongIndex = musicUrls.length > 0 ? songIndex % musicUrls.length : 0;
   const currentSlide = visibleSlides[slideIndex % visibleSlides.length];
   const nextSlide = visibleSlides[(slideIndex + 1) % visibleSlides.length];
   const currentSong = musicUrls[activeSongIndex] || '';
+
+  const changeSong = direction => {
+    if (musicUrls.length < 2) return;
+
+    setSongIndex(current => {
+      if (shuffleMusic) {
+        let next = current;
+
+        while (next === current) {
+          next = Math.floor(Math.random() * musicUrls.length);
+        }
+
+        return next;
+      }
+
+      return (current + direction + musicUrls.length) % musicUrls.length;
+    });
+  };
 
   useEffect(() => {
     if (visibleSlides.length < 2) return undefined;
@@ -201,6 +220,34 @@ export default function Hero() {
                       <i />
                     </div>
                   </div>
+                  <div className="hero-music-controls" aria-label="Music playlist controls">
+                    <button
+                      type="button"
+                      onClick={() => changeSong(-1)}
+                      disabled={musicUrls.length < 2}
+                      aria-label="Previous song"
+                    >
+                      <SkipBack size={15} />
+                    </button>
+                    <button
+                      type="button"
+                      className={shuffleMusic ? 'is-active' : ''}
+                      onClick={() => setShuffleMusic(current => !current)}
+                      disabled={musicUrls.length < 2}
+                      aria-label={shuffleMusic ? 'Turn shuffle off' : 'Turn shuffle on'}
+                      aria-pressed={shuffleMusic}
+                    >
+                      <Shuffle size={15} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => changeSong(1)}
+                      disabled={musicUrls.length < 2}
+                      aria-label="Next song"
+                    >
+                      <SkipForward size={15} />
+                    </button>
+                  </div>
                   <audio
                     ref={audioRef}
                     src={resolveMediaUrl(currentSong)}
@@ -220,7 +267,7 @@ export default function Hero() {
                       setMusicPlaying(false);
                       if (musicUrls.length > 1) {
                         setPlaylistStarted(true);
-                        setSongIndex(current => (current + 1) % musicUrls.length);
+                        changeSong(1);
                       }
                     }}
                   />

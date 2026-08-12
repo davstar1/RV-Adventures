@@ -59,6 +59,7 @@ export default function Hero() {
   const [slideIndex, setSlideIndex] = useState(0);
   const [songIndex, setSongIndex] = useState(0);
   const [playlistStarted, setPlaylistStarted] = useState(false);
+  const [musicPlaying, setMusicPlaying] = useState(false);
   const audioRef = useRef(null);
   const activeSongIndex = musicUrls.length > 0 ? songIndex % musicUrls.length : 0;
   const currentSlide = visibleSlides[slideIndex % visibleSlides.length];
@@ -188,19 +189,35 @@ export default function Hero() {
               )}
               {currentSong && (
                 <div className="hero-music-player">
-                  <span>Road soundtrack {musicUrls.length > 1 ? `${activeSongIndex + 1}/${musicUrls.length}` : ''}</span>
+                  <div className="hero-music-label">
+                    <span>Road soundtrack {musicUrls.length > 1 ? `${activeSongIndex + 1}/${musicUrls.length}` : ''}</span>
+                    <div className={`hero-vu-meter${musicPlaying ? ' is-playing' : ''}`} aria-hidden="true">
+                      <i />
+                      <i />
+                      <i />
+                      <i />
+                      <i />
+                      <i />
+                      <i />
+                    </div>
+                  </div>
                   <audio
                     ref={audioRef}
                     src={resolveMediaUrl(currentSong)}
                     controls
                     preload="none"
-                    onPlay={() => setPlaylistStarted(true)}
+                    onPlay={() => {
+                      setPlaylistStarted(true);
+                      setMusicPlaying(true);
+                    }}
                     onPause={event => {
                       if (!event.currentTarget.ended) {
                         setPlaylistStarted(false);
+                        setMusicPlaying(false);
                       }
                     }}
                     onEnded={() => {
+                      setMusicPlaying(false);
                       if (musicUrls.length > 1) {
                         setPlaylistStarted(true);
                         setSongIndex(current => (current + 1) % musicUrls.length);

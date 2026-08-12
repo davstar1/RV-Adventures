@@ -47,7 +47,7 @@ export default function Hero() {
       title: index === 0 ? slide.title : slide.title || 'Open Road adventure',
     }));
   }), [slides]);
-  const visibleSlides = useMemo(() => slideshowPhotos.slice(0, 8), [slideshowPhotos]);
+  const visibleSlides = slideshowPhotos;
   const musicUrls = useMemo(() => Array.from(new Set(
     slides.flatMap(slide => [
       ...(Array.isArray(slide.musicUrls) ? slide.musicUrls : []),

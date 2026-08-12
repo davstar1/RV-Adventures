@@ -32,6 +32,28 @@ const featuredLinks = [
   },
 ];
 
+function trackNameFromUrl(value) {
+  const fallback = 'Open Road track';
+  const raw = String(value || '').trim();
+  if (!raw) return fallback;
+
+  const fileName = raw
+    .split('?')[0]
+    .split('#')[0]
+    .split('/')
+    .filter(Boolean)
+    .pop();
+
+  if (!fileName) return fallback;
+
+  return decodeURIComponent(fileName)
+    .replace(/\.[a-z0-9]+$/i, '')
+    .replace(/^m-[a-f0-9-]+[-_]?/i, '')
+    .replace(/[_-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim() || fallback;
+}
+
 export default function Hero() {
   const { slides } = useContent();
   const slideshowPhotos = useMemo(() => slides.flatMap(slide => {
@@ -48,14 +70,29 @@ export default function Hero() {
     }));
   }), [slides]);
   const visibleSlides = slideshowPhotos;
-  const musicUrls = useMemo(() => Array.from(new Set(
-    slides.flatMap(slide => [
-      ...(Array.isArray(slide.musicUrls) ? slide.musicUrls : []),
-      slide.musicUrl,
-    ])
-      .map(url => String(url || '').trim())
-      .filter(Boolean),
-  )), [slides]);
+  const musicTracks = useMemo(() => {
+    const seen = new Set();
+
+    return slides.flatMap(slide => {
+      const urls = [
+        ...(Array.isArray(slide.musicUrls) ? slide.musicUrls : []),
+        slide.musicUrl,
+      ].map(url => String(url || '').trim());
+      const names = Array.isArray(slide.musicNames) ? slide.musicNames : [];
+
+      return urls.map((url, index) => ({
+        url,
+        name: String(names[index] || (index === 0 ? slide.musicName : '') || '').trim(),
+      }));
+    })
+      .filter(track => track.url)
+      .filter(track => {
+        if (seen.has(track.url)) return false;
+        seen.add(track.url);
+        return true;
+      });
+  }, [slides]);
+  const musicUrls = useMemo(() => musicTracks.map(track => track.url), [musicTracks]);
   const [slideIndex, setSlideIndex] = useState(0);
   const [songIndex, setSongIndex] = useState(0);
   const [playlistStarted, setPlaylistStarted] = useState(false);
@@ -65,7 +102,9 @@ export default function Hero() {
   const activeSongIndex = musicUrls.length > 0 ? songIndex % musicUrls.length : 0;
   const currentSlide = visibleSlides[slideIndex % visibleSlides.length];
   const nextSlide = visibleSlides[(slideIndex + 1) % visibleSlides.length];
-  const currentSong = musicUrls[activeSongIndex] || '';
+  const currentTrack = musicTracks[activeSongIndex];
+  const currentSong = currentTrack?.url || '';
+  const currentTrackName = currentTrack?.name || trackNameFromUrl(currentSong);
 
   const changeSong = direction => {
     if (musicUrls.length < 2) return;
@@ -209,7 +248,9 @@ export default function Hero() {
               {currentSong && (
                 <div className="hero-music-player">
                   <div className="hero-music-label">
-                    <span>Road soundtrack {musicUrls.length > 1 ? `${activeSongIndex + 1}/${musicUrls.length}` : ''}</span>
+                    <span>Now playing</span>
+                    <strong title={currentTrackName}>{currentTrackName}</strong>
+                    <small>Road soundtrack {musicUrls.length > 1 ? `${activeSongIndex + 1}/${musicUrls.length}` : ''}</small>
                     <div className={`hero-vu-meter${musicPlaying ? ' is-playing' : ''}`} aria-hidden="true">
                       <i />
                       <i />

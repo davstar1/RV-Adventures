@@ -88,6 +88,7 @@ const emptyForms = {
     images: [],
     caption: '',
     musicUrls: [],
+    musicNames: [],
   },
   videos: {
     title: '',
@@ -351,12 +352,28 @@ function PhotoGalleryField({ value = [], onChange, label = 'Destination gallery 
   );
 }
 
-function AudioField({ value = [], onChange, uploadPhoto, folder }) {
+function cleanTrackName(value) {
+  return String(value || '')
+    .replace(/\.[a-z0-9]+$/i, '')
+    .replace(/[_-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function AudioField({ value = [], names = [], onChange, onNamesChange, uploadPhoto, folder }) {
   const songs = Array.isArray(value) ? value : [value].filter(Boolean);
+  const trackNames = Array.isArray(names) ? names : [];
   const addSongs = nextSongs => onChange([
     ...songs.filter(song => song.trim()),
     ...nextSongs.filter(Boolean),
   ]);
+  const addTrackNames = nextNames => {
+    if (!onNamesChange) return;
+    onNamesChange([
+      ...trackNames,
+      ...nextNames,
+    ]);
+  };
 
   return (
     <div className="admin-photo-field">
@@ -366,6 +383,14 @@ function AudioField({ value = [], onChange, uploadPhoto, folder }) {
           rows={4}
           placeholder="Paste one MP3/M4A/WAV URL per line or upload music"
           onChange={e => onChange(e.target.value.split('\n'))}
+        />
+      </Field>
+      <Field label="Track names">
+        <textarea
+          value={trackNames.join('\n')}
+          rows={4}
+          placeholder="Optional: one track name per line, in the same order as the music URLs"
+          onChange={e => onNamesChange(e.target.value.split('\n'))}
         />
       </Field>
       <label className="admin-upload">
@@ -379,6 +404,7 @@ function AudioField({ value = [], onChange, uploadPhoto, folder }) {
             const files = Array.from(e.target.files || []);
             if (files.length) {
               addSongs(await Promise.all(files.map(file => uploadOrReadAudio(file, uploadPhoto, folder))));
+              addTrackNames(files.map(file => cleanTrackName(file.name)));
             }
             e.target.value = '';
           }}
@@ -642,7 +668,14 @@ function AdminForm({ active, form, setForm, onSave, isEditing, uploadPhoto }) {
         <Field label="Caption">
           <textarea value={form.caption} rows={4} placeholder="Optional short note about this photo." onChange={e => patch({ caption: e.target.value })} />
         </Field>
-        <AudioField value={form.musicUrls} onChange={musicUrls => patch({ musicUrls })} uploadPhoto={uploadPhoto} folder="music" />
+        <AudioField
+          value={form.musicUrls}
+          names={form.musicNames}
+          onChange={musicUrls => patch({ musicUrls })}
+          onNamesChange={musicNames => patch({ musicNames })}
+          uploadPhoto={uploadPhoto}
+          folder="music"
+        />
         <button className="admin-save" onClick={onSave}><Plus size={16} /> {actionLabel('Slideshow Entry')}</button>
       </div>
     );
@@ -840,6 +873,7 @@ function formFromEntry(active, entry) {
       images: cleanUrlList(entry.images || [entry.image]),
       caption: entry.caption || '',
       musicUrls: cleanUrlList(entry.musicUrls || [entry.musicUrl]),
+      musicNames: Array.isArray(entry.musicNames) ? entry.musicNames : [],
     };
   }
 
@@ -961,6 +995,9 @@ function buildPayload(active, form) {
   if (active === 'slides') {
     const images = cleanUrlList(form.images);
     const musicUrls = cleanUrlList(form.musicUrls);
+    const musicNames = Array.isArray(form.musicNames)
+      ? form.musicNames.map(name => String(name || '').trim())
+      : [];
 
     if (images.length === 0 && musicUrls.length === 0) return { error: 'Add at least one photo URL or upload music first.' };
 
@@ -972,6 +1009,8 @@ function buildPayload(active, form) {
         caption: form.caption || '',
         musicUrl: musicUrls[0] || '',
         musicUrls,
+        musicName: musicNames[0] || '',
+        musicNames,
       },
     };
   }

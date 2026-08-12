@@ -221,12 +221,6 @@ export default function Hero() {
                     fetchPriority="high"
                     decoding="async"
                   />
-                  {(currentSlide.title || currentSlide.caption) && (
-                    <figcaption>
-                      {currentSlide.title && <strong>{currentSlide.title}</strong>}
-                      {currentSlide.caption && <span>{currentSlide.caption}</span>}
-                    </figcaption>
-                  )}
                 </figure>
               ) : (
                 <div className="hero-slide hero-slide-empty">
@@ -244,6 +238,14 @@ export default function Hero() {
                   decoding="async"
                   aria-hidden="true"
                 />
+              )}
+              {currentSlide && (currentSlide.title || currentSlide.caption) && (
+                <div className="hero-slide-caption">
+                  <div className="hero-slide-caption-track">
+                    {currentSlide.title && <strong>{currentSlide.title}</strong>}
+                    {currentSlide.caption && <span>{currentSlide.caption}</span>}
+                  </div>
+                </div>
               )}
               {currentSong && (
                 <div className="hero-music-player">

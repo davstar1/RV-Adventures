@@ -608,6 +608,12 @@
 
 .hero-photo-comments .photo-comments {
   margin-top: 0;
+  border-top: 0;
+  padding-top: 0;
+}
+
+.hero-photo-comments .photo-comments--collapsible .photo-comments-list {
+  max-height: 120px;
 }
 
 .hero-feature-links {

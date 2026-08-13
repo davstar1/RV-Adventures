@@ -120,6 +120,7 @@ export default function Hero() {
   const [playlistStarted, setPlaylistStarted] = useState(false);
   const [musicPlaying, setMusicPlaying] = useState(false);
   const [shuffleMusic, setShuffleMusic] = useState(false);
+  const [commentsOpen, setCommentsOpen] = useState(false);
   const audioRef = useRef(null);
   const activeSongIndex = musicUrls.length > 0 ? songIndex % musicUrls.length : 0;
   const currentSlide = visibleSlides[slideIndex % visibleSlides.length];
@@ -147,14 +148,14 @@ export default function Hero() {
   };
 
   useEffect(() => {
-    if (visibleSlides.length < 2) return undefined;
+    if (visibleSlides.length < 2 || commentsOpen) return undefined;
 
     const timer = window.setInterval(() => {
       setSlideIndex(current => (current + 1) % visibleSlides.length);
     }, 5200);
 
     return () => window.clearInterval(timer);
-  }, [visibleSlides.length]);
+  }, [commentsOpen, visibleSlides.length]);
 
   useEffect(() => {
     if (!playlistStarted || !currentSong || !audioRef.current) return;
@@ -341,7 +342,13 @@ export default function Hero() {
               )}
               {currentSlide && (
                 <div className="hero-photo-comments">
-                  <PhotoComments photoId={currentSlide.image} title="Slideshow comments" />
+                  <PhotoComments
+                    photoId="home-slideshow"
+                    title="Slideshow comments"
+                    collapsible
+                    defaultOpen={false}
+                    onOpenChange={setCommentsOpen}
+                  />
                 </div>
               )}
             </div>

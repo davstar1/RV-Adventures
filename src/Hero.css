@@ -598,6 +598,17 @@
   height: 32px;
 }
 
+.hero-photo-comments {
+  margin: 0 12px 14px;
+  padding: 0 12px 12px;
+  border-radius: 8px;
+  background: rgba(8, 12, 17, .42);
+}
+
+.hero-photo-comments .photo-comments {
+  margin-top: 0;
+}
+
 .hero-feature-links {
   display: grid;
   gap: 1px;

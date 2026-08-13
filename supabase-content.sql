@@ -85,4 +85,47 @@ using (true);
 grant insert on public.newsletter_subscribers to anon;
 grant select, insert on public.newsletter_subscribers to authenticated;
 
+create table if not exists public.photo_comments (
+  id uuid primary key default gen_random_uuid(),
+  photo_id text not null,
+  name text not null,
+  email text not null,
+  comment text not null,
+  created_at timestamptz not null default now()
+);
+
+alter table public.photo_comments enable row level security;
+
+drop policy if exists "Public can read photo comments" on public.photo_comments;
+create policy "Public can read photo comments"
+on public.photo_comments
+for select
+to anon, authenticated
+using (true);
+
+drop policy if exists "Public can add photo comments" on public.photo_comments;
+create policy "Public can add photo comments"
+on public.photo_comments
+for insert
+to anon, authenticated
+with check (
+  length(trim(photo_id)) > 0
+  and length(trim(name)) > 0
+  and length(trim(email)) > 0
+  and length(trim(comment)) > 0
+);
+
+drop policy if exists "Signed in admins can delete photo comments" on public.photo_comments;
+create policy "Signed in admins can delete photo comments"
+on public.photo_comments
+for delete
+to authenticated
+using (true);
+
+create index if not exists photo_comments_photo_id_created_at_idx
+on public.photo_comments (photo_id, created_at asc);
+
+grant select, insert on public.photo_comments to anon;
+grant select, insert, delete on public.photo_comments to authenticated;
+
 notify pgrst, 'reload schema';

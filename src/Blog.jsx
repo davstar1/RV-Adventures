@@ -4,6 +4,7 @@ import { categories } from './data';
 import { useContent, youtubeIdFromUrl } from './contentStore';
 import { resolveMediaUrl } from './mediaUrls';
 import NewsletterForm from './NewsletterForm';
+import PhotoComments from './PhotoComments';
 import PhotoLike from './PhotoLike';
 import './Blog.css';
 
@@ -251,6 +252,9 @@ export default function Blog() {
               <div className="story-modal-text">
                 <p>{openPost.excerpt || 'Add more story text in Admin so visitors can read the full entry here.'}</p>
               </div>
+              {openMedia[photoIndex]?.type === 'image' && (
+                <PhotoComments photoId={openMedia[photoIndex].src} title="Photo comments" />
+              )}
             </div>
           </div>
         </div>

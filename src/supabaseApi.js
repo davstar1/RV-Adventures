@@ -256,3 +256,35 @@ export async function subscribeRemoteEmail(email, source = 'website') {
     }),
   });
 }
+
+export async function fetchPhotoComments(photoId) {
+  const id = String(photoId || '').trim();
+  if (!id) return [];
+
+  return publicRequest(`/rest/v1/photo_comments?select=id,photo_id,name,comment,created_at&photo_id=eq.${encodeURIComponent(id)}&order=created_at.asc`);
+}
+
+export async function addPhotoComment({ photoId, name, email, comment }) {
+  const id = String(photoId || '').trim();
+  const cleanName = String(name || '').trim();
+  const cleanEmail = String(email || '').trim().toLowerCase();
+  const cleanComment = String(comment || '').trim();
+
+  if (!id) throw new Error('Photo was not found.');
+  if (!cleanName || !cleanEmail || !cleanComment) {
+    throw new Error('Add your name, email, and comment first.');
+  }
+
+  const rows = await publicRequest('/rest/v1/photo_comments?select=id,photo_id,name,comment,created_at', {
+    method: 'POST',
+    headers: { Prefer: 'return=representation' },
+    body: JSON.stringify({
+      photo_id: id,
+      name: cleanName,
+      email: cleanEmail,
+      comment: cleanComment,
+    }),
+  });
+
+  return rows[0];
+}

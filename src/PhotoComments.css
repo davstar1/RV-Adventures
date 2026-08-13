@@ -1,0 +1,132 @@
+.photo-comments {
+  margin-top: 20px;
+  border-top: 1px solid rgba(255,255,255,.12);
+  padding-top: 18px;
+}
+
+.photo-comments-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.photo-comments-head span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--gold-lt);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.photo-comments-head em {
+  color: rgba(255,255,255,.58);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.photo-comments-form {
+  display: grid;
+  gap: 9px;
+}
+
+.photo-comments-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.photo-comments input,
+.photo-comments textarea {
+  width: 100%;
+  border: 1px solid rgba(255,255,255,.13);
+  border-radius: 8px;
+  color: var(--white);
+  background: rgba(255,255,255,.07);
+  padding: 10px 11px;
+  font: inherit;
+}
+
+.photo-comments textarea {
+  resize: vertical;
+}
+
+.photo-comments input::placeholder,
+.photo-comments textarea::placeholder {
+  color: rgba(255,255,255,.44);
+}
+
+.photo-comments button {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 0;
+  border-radius: 999px;
+  color: var(--ink);
+  background: var(--gold);
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.photo-comments button:disabled {
+  cursor: progress;
+  opacity: .66;
+}
+
+.photo-comments-status {
+  margin-top: 10px;
+  color: rgba(255,255,255,.66);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.photo-comments-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+  max-height: 240px;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.photo-comment {
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 8px;
+  background: rgba(255,255,255,.05);
+  padding: 10px 11px;
+}
+
+.photo-comment strong {
+  color: var(--white);
+  font-size: 13px;
+}
+
+.photo-comment span {
+  display: block;
+  margin-top: 2px;
+  color: rgba(255,255,255,.48);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.photo-comment p {
+  margin-top: 7px;
+  color: rgba(255,255,255,.72);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+@media (max-width: 560px) {
+  .photo-comments-fields {
+    grid-template-columns: 1fr;
+  }
+}

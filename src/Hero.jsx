@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowRight, Camera, ChevronDown, Compass, Map, MapPin, PlayCircle, Shuffle, SkipBack, SkipForward } from 'lucide-react';
 import { useContent } from './contentStore';
 import { resolveMediaUrl } from './mediaUrls';
+import PhotoComments from './PhotoComments';
 import PhotoLike from './PhotoLike';
 import './Hero.css';
 
@@ -336,6 +337,11 @@ export default function Hero() {
                       }
                     }}
                   />
+                </div>
+              )}
+              {currentSlide && (
+                <div className="hero-photo-comments">
+                  <PhotoComments photoId={currentSlide.image} title="Slideshow comments" />
                 </div>
               )}
             </div>

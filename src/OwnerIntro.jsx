@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, Camera, ChevronDown, Images, Play, X } from 'lucide-react';
 import { useContent } from './contentStore';
 import { resolveMediaUrl } from './mediaUrls';
+import PhotoComments from './PhotoComments';
 import PhotoLike from './PhotoLike';
 import './OwnerIntro.css';
 
@@ -73,15 +74,29 @@ function AboutTile({ item, title, index, onOpen }) {
   );
 }
 
+function escapeRegExp(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 export default function OwnerIntro() {
   const { about } = useContent();
   const profile = about[0];
   const media = useMemo(() => mediaFromProfile(profile), [profile]);
   const storyBody = profile?.storyBody?.trim();
   const storyTitle = profile?.storyTitle?.trim() || 'Our Story';
+  const aboutBody = profile?.body || 'Use the admin page to add your About Us story here. This is where visitors can learn who is behind Open Road RV Adventures, why you travel, and what kind of stories you share from the road.';
+  const storyLinkPhrases = storyBody
+    ? Array.from(new Set([storyTitle, 'when Dave met Karen'].filter(Boolean)))
+    : [];
+  const storyLinkPattern = storyLinkPhrases.length > 0
+    ? new RegExp(`(${storyLinkPhrases.map(escapeRegExp).join('|')})`, 'i')
+    : null;
+  const aboutParts = storyLinkPattern ? aboutBody.split(storyLinkPattern) : [aboutBody];
+  const hasInlineStoryLink = storyLinkPattern ? storyLinkPattern.test(aboutBody) : false;
   const [index, setIndex] = useState(0);
   const [modalOpen, setModalOpen] = useState(false);
   const [storyOpen, setStoryOpen] = useState(false);
+  const storyRef = useRef(null);
   const current = media[index];
 
   const previous = () => setIndex(currentIndex => (currentIndex - 1 + media.length) % media.length);
@@ -89,6 +104,12 @@ export default function OwnerIntro() {
   const openMedia = mediaIndex => {
     setIndex(mediaIndex);
     setModalOpen(true);
+  };
+  const openStory = () => {
+    setStoryOpen(true);
+    window.setTimeout(() => {
+      storyRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
   };
 
   useEffect(() => {
@@ -117,10 +138,27 @@ export default function OwnerIntro() {
       <div className="section-wrap owner-wrap">
         <div className="owner-copy">
           <span className="eyebrow">About Us</span>
-          <h2>{profile?.title || 'A note from the road'}</h2>
           <p>
-            {profile?.body || 'Use the admin page to add your About Us story here. This is where visitors can learn who is behind Open Road RV Adventures, why you travel, and what kind of stories you share from the road.'}
+            {aboutParts.map((part, partIndex) => (
+              storyLinkPhrases.some(phrase => part.toLowerCase() === phrase.toLowerCase()) ? (
+                <button
+                  key={`${part}-${partIndex}`}
+                  type="button"
+                  className="owner-story-link owner-story-link--inline"
+                  onClick={openStory}
+                >
+                  {part}
+                </button>
+              ) : (
+                <span key={`${part}-${partIndex}`}>{part}</span>
+              )
+            ))}
           </p>
+          {storyBody && !hasInlineStoryLink && (
+            <button type="button" className="owner-story-link" onClick={openStory}>
+              {storyTitle}
+            </button>
+          )}
         </div>
 
         <div className="owner-collage" aria-label="About us photo and video collage">
@@ -143,8 +181,8 @@ export default function OwnerIntro() {
         </div>
       </div>
 
-      {storyBody && (
-        <div className="section-wrap owner-story-wrap">
+      {storyBody && storyOpen && (
+        <div className="section-wrap owner-story-wrap" ref={storyRef}>
           <article className={`owner-story ${storyOpen ? 'owner-story--open' : ''}`}>
             <button
               type="button"
@@ -196,6 +234,9 @@ export default function OwnerIntro() {
               <div className="owner-modal-text">
                 <p>{current.description || 'Add a description for this photo or video in the About Us section of Admin.'}</p>
               </div>
+              {current.type !== 'video' && (
+                <PhotoComments photoId={current.src} title="Photo comments" />
+              )}
             </div>
           </div>
         </div>

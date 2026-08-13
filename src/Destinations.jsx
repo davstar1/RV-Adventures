@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, ArrowRight, Images, MapPin, X } from 'lucide-react';
 import { useContent, youtubeIdFromUrl } from './contentStore';
 import { resolveMediaUrl } from './mediaUrls';
+import PhotoComments from './PhotoComments';
 import PhotoLike from './PhotoLike';
 import './Destinations.css';
 
@@ -144,6 +145,9 @@ export default function Destinations() {
                   <p>Add a destination description in Admin to tell visitors what you saw, where you stayed, and what you would do again.</p>
                 )}
               </div>
+              {media[photoIndex]?.type === 'image' && (
+                <PhotoComments photoId={media[photoIndex].src} title="Photo comments" />
+              )}
             </div>
           </div>
         </div>

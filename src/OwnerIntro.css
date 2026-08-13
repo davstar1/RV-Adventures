@@ -24,8 +24,42 @@
   white-space: pre-line;
 }
 
+.owner-story-link {
+  display: inline-flex;
+  margin-top: 18px;
+  border: 0;
+  border-bottom: 2px solid rgba(232,137,12,.68);
+  border-radius: 0;
+  padding: 0 0 4px;
+  color: var(--gold-lt);
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-size: 17px;
+  font-weight: 900;
+  line-height: 1.25;
+  text-align: left;
+  transition: border-color .2s ease, color .2s ease, transform .2s ease;
+}
+
+.owner-story-link--inline {
+  display: inline;
+  margin-top: 0;
+  padding-bottom: 2px;
+  vertical-align: baseline;
+}
+
+.owner-story-link:hover,
+.owner-story-link:focus-visible {
+  border-color: var(--gold);
+  color: var(--gold);
+  outline: none;
+  transform: translateY(-1px);
+}
+
 .owner-story-wrap {
   margin-top: 54px;
+  scroll-margin-top: 110px;
 }
 
 .owner-story {

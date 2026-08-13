@@ -200,12 +200,12 @@ export default function Hero() {
 
           <h1 className="hero-title">
             <span className="hero-title-glow" aria-hidden="true">
-              <span>Come Ride Along</span>
-              <em>The Open Road With Us.</em>
+              <span>Let curiosity lead the way,</span>
+              <em>and exploration carry us toward the adventures that await.</em>
             </span>
             <span className="hero-title-copy">
-              <span>Come Ride Along</span>
-              <em>The Open Road With Us.</em>
+              <span>Let curiosity lead the way,</span>
+              <em>and exploration carry us toward the adventures that await.</em>
             </span>
           </h1>
 

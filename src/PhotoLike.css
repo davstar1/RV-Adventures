@@ -26,11 +26,27 @@
   outline: none;
 }
 
+.photo-like:disabled {
+  cursor: progress;
+  opacity: .78;
+}
+
 .photo-like--active {
   border-color: rgba(255,92,122,.62);
   color: #ff6d8d;
   background: rgba(70,16,28,.84);
   box-shadow: 0 10px 26px rgba(255,92,122,.22);
+}
+
+.photo-like em {
+  min-width: 20px;
+  border-radius: 999px;
+  color: rgba(255,255,255,.92);
+  background: rgba(255,255,255,.13);
+  padding: 2px 6px;
+  font-size: 11px;
+  font-style: normal;
+  line-height: 1.2;
 }
 
 .photo-like--floating {

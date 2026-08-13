@@ -85,6 +85,45 @@ using (true);
 grant insert on public.newsletter_subscribers to anon;
 grant select, insert on public.newsletter_subscribers to authenticated;
 
+create table if not exists public.photo_likes (
+  photo_id text primary key,
+  like_count integer not null default 0 check (like_count >= 0),
+  updated_at timestamptz not null default now()
+);
+
+alter table public.photo_likes enable row level security;
+
+drop policy if exists "Public can read photo likes" on public.photo_likes;
+create policy "Public can read photo likes"
+on public.photo_likes
+for select
+to anon, authenticated
+using (true);
+
+drop policy if exists "Public can add photo likes" on public.photo_likes;
+create policy "Public can add photo likes"
+on public.photo_likes
+for insert
+to anon, authenticated
+with check (
+  length(trim(photo_id)) > 0
+  and like_count >= 0
+);
+
+drop policy if exists "Public can update photo likes" on public.photo_likes;
+create policy "Public can update photo likes"
+on public.photo_likes
+for update
+to anon, authenticated
+using (true)
+with check (
+  length(trim(photo_id)) > 0
+  and like_count >= 0
+);
+
+grant select, insert, update on public.photo_likes to anon;
+grant select, insert, update on public.photo_likes to authenticated;
+
 create table if not exists public.photo_comments (
   id uuid primary key default gen_random_uuid(),
   photo_id text not null,

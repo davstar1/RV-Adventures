@@ -289,6 +289,32 @@ export async function addPhotoComment({ photoId, name, email, comment }) {
   return rows[0];
 }
 
+export async function fetchPhotoLikeCount(photoId) {
+  const id = String(photoId || '').trim();
+  if (!id) return 0;
+
+  const rows = await publicRequest(`/rest/v1/photo_likes?select=photo_id,like_count&photo_id=eq.${encodeURIComponent(id)}&limit=1`);
+  return Number(rows[0]?.like_count) || 0;
+}
+
+export async function savePhotoLikeCount(photoId, delta) {
+  const id = String(photoId || '').trim();
+  if (!id) throw new Error('Photo was not found.');
+
+  const currentCount = await fetchPhotoLikeCount(id);
+  const nextCount = Math.max(0, currentCount + Number(delta || 0));
+  const rows = await publicRequest('/rest/v1/photo_likes?on_conflict=photo_id&select=photo_id,like_count', {
+    method: 'POST',
+    headers: { Prefer: 'resolution=merge-duplicates,return=representation' },
+    body: JSON.stringify({
+      photo_id: id,
+      like_count: nextCount,
+    }),
+  });
+
+  return Number(rows[0]?.like_count) || nextCount;
+}
+
 export async function fetchAdminPhotoComments() {
   return request('/rest/v1/photo_comments?select=id,photo_id,name,email,comment,created_at&order=created_at.desc');
 }

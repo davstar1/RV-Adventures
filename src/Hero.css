@@ -159,7 +159,7 @@
   flex: 1;
   display: grid;
   grid-template-columns: minmax(300px, .78fr) minmax(420px, 1.22fr);
-  align-items: center;
+  align-items: start;
   gap: clamp(28px, 5vw, 68px);
   padding-top: 128px;
   padding-bottom: 118px;
@@ -167,6 +167,7 @@
 
 .hero-content {
   max-width: 560px;
+  padding-top: 18px;
 }
 
 .hero-eyebrow {
@@ -768,6 +769,10 @@
     grid-template-columns: 1fr;
     align-items: start;
     padding-top: 112px;
+  }
+
+  .hero-content {
+    padding-top: 0;
   }
 
   .hero-feature {

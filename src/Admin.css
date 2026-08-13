@@ -495,6 +495,21 @@
   padding: 12px;
 }
 
+.admin-entry-item--draggable {
+  cursor: grab;
+  transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+}
+
+.admin-entry-item--draggable:active {
+  cursor: grabbing;
+}
+
+.admin-entry-item--draggable:hover {
+  border-color: rgba(232,137,12,.58);
+  box-shadow: 0 12px 28px rgba(0,0,0,.24);
+  transform: translateY(-1px);
+}
+
 .admin-entry-thumb {
   width: 74px;
   height: 58px;
@@ -541,6 +556,17 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.admin-entry-drag-note {
+  display: inline-block;
+  margin-top: 6px;
+  color: rgba(255,255,255,.48);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
 }
 
 .admin-entry-actions {

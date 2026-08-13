@@ -49,16 +49,20 @@ function writeStoredContent(content) {
 
 export function getContent() {
   const stored = readStoredContent();
+  const orderedStored = {
+    ...stored,
+    slides: sortOrderedEntries(stored.slides || []),
+  };
 
   return {
-    posts: stored.posts,
-    videos: stored.videos,
-    destinations: stored.destinations,
-    gear: stored.gear,
-    comments: stored.comments,
-    about: stored.about,
-    slides: stored.slides,
-    stored,
+    posts: orderedStored.posts,
+    videos: orderedStored.videos,
+    destinations: orderedStored.destinations,
+    gear: orderedStored.gear,
+    comments: orderedStored.comments,
+    about: orderedStored.about,
+    slides: orderedStored.slides,
+    stored: orderedStored,
     remoteReady: false,
     storageMode: 'local',
   };
@@ -72,7 +76,7 @@ function contentFromRows(rows) {
     gear: rows.filter(row => row.remoteType === typeMap.gear),
     comments: rows.filter(row => row.remoteType === typeMap.comments),
     about: rows.filter(row => row.remoteType === typeMap.about),
-    slides: rows.filter(row => row.remoteType === typeMap.slides),
+    slides: sortOrderedEntries(rows.filter(row => row.remoteType === typeMap.slides)),
   };
 
   return {
@@ -87,6 +91,30 @@ function contentFromRows(rows) {
     remoteReady: true,
     storageMode: 'supabase',
   };
+}
+
+function sortOrderedEntries(entries) {
+  const hasCustomOrder = entries.some(entry => Number.isFinite(Number(entry.sortOrder)));
+  if (!hasCustomOrder) return entries;
+
+  return [...entries].sort((a, b) => {
+    const aOrder = Number.isFinite(Number(a.sortOrder)) ? Number(a.sortOrder) : Number.MAX_SAFE_INTEGER;
+    const bOrder = Number.isFinite(Number(b.sortOrder)) ? Number(b.sortOrder) : Number.MAX_SAFE_INTEGER;
+
+    if (aOrder !== bOrder) return aOrder - bOrder;
+    return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+  });
+}
+
+function payloadForSave(item) {
+  const payload = { ...item };
+
+  delete payload.id;
+  delete payload.remoteId;
+  delete payload.remoteType;
+  delete payload.createdAt;
+
+  return payload;
 }
 
 async function fetchSharedRemoteContent({ refresh = false } = {}) {
@@ -185,6 +213,29 @@ export async function updateContentItem(type, id, item) {
   };
 
   writeStoredContent(next);
+}
+
+export async function reorderContentItems(type, orderedItems) {
+  const nextItems = orderedItems.map((item, index) => ({
+    ...item,
+    sortOrder: index,
+  }));
+
+  if (isSupabaseConfigured) {
+    await Promise.all(nextItems.map(item => updateRemoteEntry(item.id, payloadForSave(item))));
+    remoteContentCache = null;
+    window.dispatchEvent(new Event(CHANGE_EVENT));
+    return;
+  }
+
+  const stored = readStoredContent();
+  const nextById = new Map(nextItems.map(item => [item.id, item]));
+  const remaining = (stored[type] || []).filter(item => !nextById.has(item.id));
+
+  writeStoredContent({
+    ...stored,
+    [type]: [...nextItems, ...remaining],
+  });
 }
 
 export async function deleteContentItem(type, id) {

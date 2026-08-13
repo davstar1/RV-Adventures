@@ -57,24 +57,44 @@ function trackNameFromUrl(value) {
 
 export default function Hero() {
   const { slides } = useContent();
-  const slideshowPhotos = useMemo(() => slides.flatMap(slide => {
-    const images = Array.from(new Set([
-      ...(Array.isArray(slide.images) ? slide.images : []),
-      slide.image,
-    ].map(image => String(image || '').trim()).filter(Boolean)));
+  const orderedSlides = useMemo(() => {
+    const hasCustomOrder = slides.some(slide => Number.isFinite(Number(slide.sortOrder)));
+    if (!hasCustomOrder) return slides;
 
-    return images.map((image, index) => ({
-      ...slide,
-      image,
-      id: `${slide.id || slide.image || image}-${index}`,
-      title: index === 0 ? slide.title : slide.title || 'Open Road adventure',
-    }));
-  }), [slides]);
+    return [...slides].sort((a, b) => {
+      const aOrder = Number.isFinite(Number(a.sortOrder)) ? Number(a.sortOrder) : Number.MAX_SAFE_INTEGER;
+      const bOrder = Number.isFinite(Number(b.sortOrder)) ? Number(b.sortOrder) : Number.MAX_SAFE_INTEGER;
+
+      if (aOrder !== bOrder) return aOrder - bOrder;
+      return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+    });
+  }, [slides]);
+  const slideshowPhotos = useMemo(() => {
+    const seen = new Set();
+
+    return orderedSlides.flatMap(slide => {
+      const images = [
+        ...(Array.isArray(slide.images) ? slide.images : []),
+        slide.image,
+      ].map(image => String(image || '').trim()).filter(Boolean);
+
+      return images.map((image, index) => ({
+        ...slide,
+        image,
+        id: `${slide.id || slide.image || image}-${index}`,
+        title: index === 0 ? slide.title : slide.title || 'Open Road adventure',
+      }));
+    }).filter(slide => {
+      if (seen.has(slide.image)) return false;
+      seen.add(slide.image);
+      return true;
+    });
+  }, [orderedSlides]);
   const visibleSlides = slideshowPhotos;
   const musicTracks = useMemo(() => {
     const seen = new Set();
 
-    return slides.flatMap(slide => {
+    return orderedSlides.flatMap(slide => {
       const urls = [
         ...(Array.isArray(slide.musicUrls) ? slide.musicUrls : []),
         slide.musicUrl,
@@ -92,7 +112,7 @@ export default function Hero() {
         seen.add(track.url);
         return true;
       });
-  }, [slides]);
+  }, [orderedSlides]);
   const musicUrls = useMemo(() => musicTracks.map(track => track.url), [musicTracks]);
   const [slideIndex, setSlideIndex] = useState(0);
   const [songIndex, setSongIndex] = useState(0);

@@ -22,6 +22,7 @@ import {
   addContentItem,
   clearAdminContent,
   deleteContentItem,
+  reorderContentItems,
   slugify,
   updateContentItem,
   useContent,
@@ -89,6 +90,7 @@ const emptyForms = {
     caption: '',
     musicUrls: [],
     musicNames: [],
+    sortOrder: '',
   },
   videos: {
     title: '',
@@ -900,6 +902,7 @@ function formFromEntry(active, entry) {
       caption: entry.caption || '',
       musicUrls: cleanUrlList(entry.musicUrls || [entry.musicUrl]),
       musicNames: Array.isArray(entry.musicNames) ? entry.musicNames : [],
+      sortOrder: entry.sortOrder ?? '',
     };
   }
 
@@ -1037,6 +1040,7 @@ function buildPayload(active, form) {
         musicUrls,
         musicName: musicNames[0] || '',
         musicNames,
+        sortOrder: Number.isFinite(Number(form.sortOrder)) ? Number(form.sortOrder) : Date.now(),
       },
     };
   }
@@ -1072,10 +1076,19 @@ function buildPayload(active, form) {
   };
 }
 
-function EntryList({ active, entries, onEdit, onDelete }) {
+function EntryList({ active, entries, onEdit, onDelete, onReorder }) {
   const isCommunity = active === 'community';
+  const canReorder = active === 'slides' && entries.length > 1;
   const tabLabel = tabs.find(tab => tab.id === active)?.label;
   const entryLabel = isCommunity ? 'visitor comments' : 'admin entries';
+  const moveEntry = (fromIndex, toIndex) => {
+    if (!canReorder || fromIndex === toIndex) return;
+
+    const nextEntries = [...entries];
+    const [movedEntry] = nextEntries.splice(fromIndex, 1);
+    nextEntries.splice(toIndex, 0, movedEntry);
+    onReorder(nextEntries);
+  };
 
   return (
     <div className="admin-entry-list">
@@ -1088,8 +1101,28 @@ function EntryList({ active, entries, onEdit, onDelete }) {
         <p className="admin-empty">{isCommunity ? 'No community comments yet.' : 'No admin-created entries yet.'}</p>
       ) : (
         <div className="admin-entry-items">
-          {entries.map(entry => (
-            <article key={entry.id} className="admin-entry-item">
+          {entries.map((entry, index) => (
+            <article
+              key={entry.id}
+              className={`admin-entry-item ${canReorder ? 'admin-entry-item--draggable' : ''}`}
+              draggable={canReorder}
+              onDragStart={e => {
+                if (!canReorder) return;
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', String(index));
+              }}
+              onDragOver={e => {
+                if (!canReorder) return;
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+              }}
+              onDrop={e => {
+                if (!canReorder) return;
+                e.preventDefault();
+                const fromIndex = Number(e.dataTransfer.getData('text/plain'));
+                if (Number.isInteger(fromIndex)) moveEntry(fromIndex, index);
+              }}
+            >
               {'image' in entry || 'thumb' in entry ? (
                 <img src={resolveMediaUrl(entry.image || entry.thumb)} alt="" className="admin-entry-thumb" />
               ) : (
@@ -1101,6 +1134,7 @@ function EntryList({ active, entries, onEdit, onDelete }) {
                 {entry.excerpt && <p>{entry.excerpt}</p>}
                 {entry.desc && <p>{entry.desc}</p>}
                 {active === 'community' && <p>{entry.text}</p>}
+                {canReorder && <em className="admin-entry-drag-note">Drag to reorder slideshow</em>}
               </div>
               <div className="admin-entry-actions">
                 <button type="button" className="admin-edit" onClick={() => onEdit(entry)} aria-label={`Edit ${titleForEntry(entry)}`}>
@@ -1243,6 +1277,17 @@ export default function Admin() {
     setNotice('Editing entry. Make changes, then update it.');
   };
 
+  const reorderEntries = async orderedEntries => {
+    if (active !== 'slides') return;
+
+    try {
+      await reorderContentItems(activeTab.store, orderedEntries);
+      setNotice('Slideshow order updated.');
+    } catch (err) {
+      setNotice(err.message);
+    }
+  };
+
   const cancelEdit = () => {
     setEditingId(null);
     setForms(current => ({ ...current, [active]: emptyForms[active] }));
@@ -1348,7 +1393,13 @@ export default function Admin() {
             </div>
             </div>
             <AdminForm active={active} form={form} setForm={setForm} onSave={save} isEditing={Boolean(editingId)} uploadPhoto={uploadAdminPhoto} />
-            <EntryList active={active} entries={activeEntries} onEdit={editEntry} onDelete={removeEntry} />
+            <EntryList
+              active={active}
+              entries={activeEntries}
+              onEdit={editEntry}
+              onDelete={removeEntry}
+              onReorder={reorderEntries}
+            />
           </section>
         </div>
       </div>

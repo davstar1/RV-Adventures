@@ -122,10 +122,23 @@ for delete
 to authenticated
 using (true);
 
+drop policy if exists "Signed in admins can update photo comments" on public.photo_comments;
+create policy "Signed in admins can update photo comments"
+on public.photo_comments
+for update
+to authenticated
+using (true)
+with check (
+  length(trim(photo_id)) > 0
+  and length(trim(name)) > 0
+  and length(trim(email)) > 0
+  and length(trim(comment)) > 0
+);
+
 create index if not exists photo_comments_photo_id_created_at_idx
 on public.photo_comments (photo_id, created_at asc);
 
 grant select, insert on public.photo_comments to anon;
-grant select, insert, delete on public.photo_comments to authenticated;
+grant select, insert, update, delete on public.photo_comments to authenticated;
 
 notify pgrst, 'reload schema';

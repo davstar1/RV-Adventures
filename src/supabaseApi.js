@@ -288,3 +288,27 @@ export async function addPhotoComment({ photoId, name, email, comment }) {
 
   return rows[0];
 }
+
+export async function fetchAdminPhotoComments() {
+  return request('/rest/v1/photo_comments?select=id,photo_id,name,email,comment,created_at&order=created_at.desc');
+}
+
+export async function updatePhotoComment(id, { name, email, comment }) {
+  const rows = await request(`/rest/v1/photo_comments?id=eq.${encodeURIComponent(id)}&select=id,photo_id,name,email,comment,created_at`, {
+    method: 'PATCH',
+    headers: { Prefer: 'return=representation' },
+    body: JSON.stringify({
+      name: String(name || '').trim(),
+      email: String(email || '').trim().toLowerCase(),
+      comment: String(comment || '').trim(),
+    }),
+  });
+
+  return rows[0];
+}
+
+export async function deletePhotoComment(id) {
+  await request(`/rest/v1/photo_comments?id=eq.${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+  });
+}

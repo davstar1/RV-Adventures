@@ -31,10 +31,13 @@ import {
 import { categories } from './data';
 import {
   getAdminSession,
+  deletePhotoComment,
+  fetchAdminPhotoComments,
   isSupabaseConfigured,
   onAdminAuthChange,
   signInAdmin,
   signOutAdmin,
+  updatePhotoComment,
   uploadPhotoToGitHub,
 } from './supabaseApi';
 import { resolveMediaUrl } from './mediaUrls';
@@ -51,6 +54,7 @@ const tabs = [
   { id: 'destinations', label: 'Destinations', icon: MapPin, store: 'destinations' },
   { id: 'gear', label: 'Gear', icon: Package, store: 'gear' },
   { id: 'community', label: 'Community', icon: MessageCircle, store: 'comments' },
+  { id: 'photo-comments', label: 'Photo Comments', icon: MessageCircle, store: 'photo-comments' },
 ];
 
 function tabFromHash() {
@@ -1197,6 +1201,105 @@ function EntryList({ active, entries, onEdit, onDelete, onReorder }) {
   );
 }
 
+function PhotoCommentsManager({ comments, onRefresh, onNotice }) {
+  const [editingId, setEditingId] = useState(null);
+  const [draft, setDraft] = useState({ name: '', email: '', comment: '' });
+
+  const startEdit = comment => {
+    setEditingId(comment.id);
+    setDraft({
+      name: comment.name || '',
+      email: comment.email || '',
+      comment: comment.comment || '',
+    });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setDraft({ name: '', email: '', comment: '' });
+  };
+
+  const saveComment = async id => {
+    try {
+      await updatePhotoComment(id, draft);
+      cancelEdit();
+      await onRefresh();
+      onNotice('Photo comment updated.');
+    } catch (err) {
+      onNotice(err.message);
+    }
+  };
+
+  const removeComment = async id => {
+    const confirmed = window.confirm('Delete this photo comment?');
+    if (!confirmed) return;
+
+    try {
+      await deletePhotoComment(id);
+      await onRefresh();
+      onNotice('Photo comment deleted.');
+    } catch (err) {
+      onNotice(err.message);
+    }
+  };
+
+  return (
+    <div className="admin-photo-comments-manager">
+      <div className="admin-entry-list-head">
+        <h3>Photo Comments</h3>
+        <span>{comments.length} comments</span>
+      </div>
+
+      {comments.length === 0 ? (
+        <p className="admin-empty">No photo comments yet.</p>
+      ) : (
+        <div className="admin-photo-comment-items">
+          {comments.map(comment => (
+            <article className="admin-photo-comment-item" key={comment.id}>
+              <div className="admin-photo-comment-meta">
+                <strong>{comment.name}</strong>
+                <span>{comment.email}</span>
+                <small>{new Date(comment.created_at).toLocaleString()}</small>
+                <em>{comment.photo_id}</em>
+              </div>
+
+              {editingId === comment.id ? (
+                <div className="admin-photo-comment-edit">
+                  <Field label="Name">
+                    <input value={draft.name} onChange={event => setDraft(current => ({ ...current, name: event.target.value }))} />
+                  </Field>
+                  <Field label="Email">
+                    <input type="email" value={draft.email} onChange={event => setDraft(current => ({ ...current, email: event.target.value }))} />
+                  </Field>
+                  <Field label="Comment">
+                    <textarea rows={4} value={draft.comment} onChange={event => setDraft(current => ({ ...current, comment: event.target.value }))} />
+                  </Field>
+                  <div className="admin-entry-actions">
+                    <button type="button" className="admin-edit" onClick={() => saveComment(comment.id)}>Save</button>
+                    <button type="button" className="admin-delete" onClick={cancelEdit}>Cancel</button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <p>{comment.comment}</p>
+                  <div className="admin-entry-actions">
+                    <button type="button" className="admin-edit" onClick={() => startEdit(comment)}>
+                      <PenLine size={15} /> Edit
+                    </button>
+                    <button type="button" className="admin-delete" onClick={() => removeComment(comment.id)}>
+                      <Trash2 size={15} /> Delete
+                    </button>
+                  </div>
+                </>
+              )}
+            </article>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function BackToSiteButton({ floating = false }) {
   return (
     <button
@@ -1277,6 +1380,7 @@ export default function Admin() {
   const [editingId, setEditingId] = useState(null);
   const [session, setSession] = useState(getAdminSession);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [photoComments, setPhotoComments] = useState([]);
   const content = useContent();
 
   useEffect(() => {
@@ -1287,10 +1391,28 @@ export default function Admin() {
 
   useEffect(() => onAdminAuthChange(setSession), []);
 
+  useEffect(() => {
+    if (!session || active !== 'photo-comments') return undefined;
+
+    let cancelled = false;
+
+    fetchAdminPhotoComments()
+      .then(comments => {
+        if (!cancelled) setPhotoComments(comments);
+      })
+      .catch(err => {
+        if (!cancelled) setNotice(err.message);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [active, session]);
+
   const counts = useMemo(() => tabs.reduce((next, tab) => ({
     ...next,
-    [tab.id]: entriesForTab(content.stored, tab).length,
-  }), {}), [content.stored]);
+    [tab.id]: tab.id === 'photo-comments' ? photoComments.length : entriesForTab(content.stored, tab).length,
+  }), {}), [content.stored, photoComments.length]);
 
   const form = forms[active];
   const activeTab = activeTabFor(active);
@@ -1331,6 +1453,11 @@ export default function Admin() {
     } catch (err) {
       setNotice(err.message);
     }
+  };
+
+  const refreshPhotoComments = async () => {
+    const comments = await fetchAdminPhotoComments();
+    setPhotoComments(comments);
   };
 
   const cancelEdit = () => {
@@ -1437,14 +1564,20 @@ export default function Admin() {
               {notice && <span className="admin-notice">{notice}</span>}
             </div>
             </div>
-            <AdminForm active={active} form={form} setForm={setForm} onSave={save} isEditing={Boolean(editingId)} uploadPhoto={uploadAdminPhoto} />
-            <EntryList
-              active={active}
-              entries={activeEntries}
-              onEdit={editEntry}
-              onDelete={removeEntry}
-              onReorder={reorderEntries}
-            />
+            {active === 'photo-comments' ? (
+              <PhotoCommentsManager comments={photoComments} onRefresh={refreshPhotoComments} onNotice={setNotice} />
+            ) : (
+              <>
+                <AdminForm active={active} form={form} setForm={setForm} onSave={save} isEditing={Boolean(editingId)} uploadPhoto={uploadAdminPhoto} />
+                <EntryList
+                  active={active}
+                  entries={activeEntries}
+                  onEdit={editEntry}
+                  onDelete={removeEntry}
+                  onReorder={reorderEntries}
+                />
+              </>
+            )}
           </section>
         </div>
       </div>

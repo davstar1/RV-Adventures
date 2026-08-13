@@ -324,6 +324,20 @@
   display: none;
 }
 
+.admin-audio-field {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: stretch;
+  gap: 14px;
+}
+
+.admin-audio-upload {
+  width: fit-content;
+  min-width: 220px;
+  justify-self: start;
+  margin-top: 4px;
+}
+
 .admin-gallery-field {
   display: grid;
   gap: 12px;
@@ -440,6 +454,62 @@
   padding: 7px;
   font-size: 12px;
   font-weight: 800;
+}
+
+.admin-audio-playlist {
+  display: grid;
+  gap: 9px;
+}
+
+.admin-audio-item {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, .7fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  border: 1.5px solid rgba(255,255,255,.12);
+  border-radius: var(--r-sm);
+  background: #2c3943;
+  padding: 10px;
+  color: rgba(255,255,255,.72);
+  cursor: grab;
+  transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+
+.admin-audio-item:active {
+  cursor: grabbing;
+}
+
+.admin-audio-item:hover {
+  border-color: rgba(232,137,12,.55);
+  box-shadow: 0 10px 22px rgba(0,0,0,.22);
+  transform: translateY(-1px);
+}
+
+.admin-audio-drag-handle {
+  color: rgba(255,255,255,.52);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.admin-audio-item strong,
+.admin-audio-item small {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-audio-item strong {
+  color: #f7f2e8;
+  font-size: 13px;
+}
+
+.admin-audio-item small {
+  color: rgba(255,255,255,.48);
+  font-size: 11px;
+  font-weight: 700;
 }
 
 .admin-save {
@@ -630,6 +700,14 @@
 
   .admin-panel-status {
     justify-content: flex-start;
+  }
+
+  .admin-audio-item {
+    grid-template-columns: auto auto minmax(0, 1fr);
+  }
+
+  .admin-audio-item small {
+    grid-column: 1 / -1;
   }
 
   .admin-entry-actions {

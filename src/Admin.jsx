@@ -272,7 +272,7 @@ function photoFolderForActive(active, form = {}) {
 
 function PhotoField({ label, value, onChange, uploadPhoto, folder, onAdditionalPhotos }) {
   return (
-    <div className="admin-photo-field">
+    <div className="admin-photo-field admin-audio-field">
       <Field label={label}>
         <input
           type="url"
@@ -391,6 +391,9 @@ function cleanTrackName(value) {
 function AudioField({ value = [], names = [], onChange, onNamesChange, uploadPhoto, folder }) {
   const songs = Array.isArray(value) ? value : [value].filter(Boolean);
   const trackNames = Array.isArray(names) ? names : [];
+  const visibleSongs = songs
+    .map((song, index) => ({ song, name: trackNames[index] || cleanTrackName(song.split('/').pop() || ''), index }))
+    .filter(item => item.song.trim());
   const addSongs = nextSongs => onChange([
     ...songs.filter(song => song.trim()),
     ...nextSongs.filter(Boolean),
@@ -402,9 +405,22 @@ function AudioField({ value = [], names = [], onChange, onNamesChange, uploadPho
       ...nextNames,
     ]);
   };
+  const moveSong = (fromIndex, toIndex) => {
+    if (fromIndex === toIndex) return;
+
+    const nextSongs = [...songs];
+    const nextNames = [...trackNames];
+    const [movedSong] = nextSongs.splice(fromIndex, 1);
+    const [movedName] = nextNames.splice(fromIndex, 1);
+
+    nextSongs.splice(toIndex, 0, movedSong);
+    nextNames.splice(toIndex, 0, movedName || '');
+    onChange(nextSongs);
+    onNamesChange(nextNames);
+  };
 
   return (
-    <div className="admin-photo-field">
+    <div className="admin-photo-field admin-audio-field">
       <Field label="Slideshow music URLs">
         <textarea
           value={songs.join('\n')}
@@ -421,7 +437,36 @@ function AudioField({ value = [], names = [], onChange, onNamesChange, uploadPho
           onChange={e => onNamesChange(e.target.value.split('\n'))}
         />
       </Field>
-      <label className="admin-upload">
+      {visibleSongs.length > 0 && (
+        <div className="admin-audio-playlist">
+          {visibleSongs.map(({ song, name, index }) => (
+            <div
+              key={`${song}-${index}`}
+              className="admin-audio-item"
+              draggable
+              onDragStart={e => {
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', String(index));
+              }}
+              onDragOver={e => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+              }}
+              onDrop={e => {
+                e.preventDefault();
+                const fromIndex = Number(e.dataTransfer.getData('text/plain'));
+                if (Number.isInteger(fromIndex)) moveSong(fromIndex, index);
+              }}
+            >
+              <span className="admin-audio-drag-handle">Drag</span>
+              <Music size={16} />
+              <strong>{name || `Track ${index + 1}`}</strong>
+              <small>{song}</small>
+            </div>
+          ))}
+        </div>
+      )}
+      <label className="admin-upload admin-audio-upload">
         <Music size={16} />
         Upload Music
         <input

@@ -365,14 +365,18 @@
 
 .admin-about-media-list {
   display: grid;
-  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 10px;
 }
 
 .admin-about-media-item {
+  position: relative;
   display: grid;
-  grid-template-columns: minmax(100px, .45fr) minmax(0, 1fr);
-  gap: 12px;
-  padding: 14px;
+  grid-template-rows: minmax(0, 1fr) auto;
+  aspect-ratio: 1;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0;
   border: 1.5px solid rgba(255,255,255,.12);
   border-radius: var(--r-md);
   background: #2c3943;
@@ -386,53 +390,126 @@
   transform: translateY(-1px);
 }
 
+.admin-about-media-item.is-selected {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px rgba(232,137,12,.2), 0 12px 24px rgba(0,0,0,.24);
+}
+
+.admin-about-media-item.is-drop-target {
+  border-color: #8fc8c8;
+  box-shadow: 0 0 0 3px rgba(143,200,200,.24);
+  transform: translateY(-3px);
+}
+
 .admin-about-media-item:active {
   cursor: grabbing;
 }
 
 .admin-about-media-drag-handle {
-  grid-column: 1 / -1;
-  display: block;
-  padding: 7px 9px;
-  border-radius: var(--r-sm);
-  color: rgba(255,255,255,.68);
+  position: absolute;
+  top: 7px;
+  left: 7px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 30px;
+  padding: 5px 6px;
+  border-radius: 999px;
+  color: var(--white);
   font-size: 10px;
   font-weight: 900;
-  letter-spacing: .08em;
-  text-align: center;
-  text-transform: uppercase;
-  background: rgba(255,255,255,.06);
+  letter-spacing: 0;
+  background: rgba(15,25,34,.82);
+  box-shadow: 0 4px 12px rgba(0,0,0,.28);
 }
 
-.admin-about-media-item .admin-field:has(textarea) {
-  grid-column: 1 / -1;
+.admin-about-media-thumb {
+  min-height: 0;
+  overflow: hidden;
+  background: var(--ink);
 }
 
-.admin-about-media-preview {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: 140px auto;
-  align-items: stretch;
-  gap: 10px;
-}
-
-.admin-about-media-preview img,
-.admin-about-media-preview video,
-.admin-about-media-preview .admin-entry-thumb {
-  width: 140px;
-  height: 86px;
-  border-radius: var(--r-sm);
+.admin-about-media-thumb img,
+.admin-about-media-thumb video,
+.admin-about-media-thumb .admin-entry-thumb {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  border-radius: 0;
   object-fit: cover;
   background: var(--ink);
 }
 
-.admin-about-media-preview button {
+.admin-about-media-card-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  min-width: 0;
+  padding: 8px 9px;
+  background: #26333d;
+}
+
+.admin-about-media-card-label strong,
+.admin-about-media-card-label small {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-about-media-card-label strong {
+  color: #f7f2e8;
+  font-size: 11px;
+}
+
+.admin-about-media-card-label small {
+  color: var(--gold-lt);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.admin-about-media-editor {
+  display: grid;
+  gap: 14px;
+  margin-top: 4px;
+  padding: 16px;
+  border: 1.5px solid rgba(232,137,12,.34);
+  border-radius: var(--r-md);
+  background: #2c3943;
+}
+
+.admin-about-media-editor-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.admin-about-media-editor-head strong {
+  color: #f7f2e8;
+  font-size: 14px;
+}
+
+.admin-about-media-editor-head button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   border: 0;
   border-radius: var(--r-sm);
-  background: rgba(224,92,92,.16);
+  padding: 8px 10px;
   color: #ffd0d0;
+  background: rgba(224,92,92,.16);
   font-size: 12px;
   font-weight: 800;
+}
+
+.admin-about-media-editor-grid {
+  display: grid;
+  grid-template-columns: minmax(130px, .35fr) minmax(0, 1fr);
+  gap: 12px;
 }
 
 .admin-gallery-preview {
@@ -771,6 +848,14 @@
 
   .admin-form-grid,
   .admin-photo-field {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-about-media-list {
+    grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+  }
+
+  .admin-about-media-editor-grid {
     grid-template-columns: 1fr;
   }
 

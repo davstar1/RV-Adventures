@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   ArrowLeft,
   Camera,
+  GripVertical,
   UserRound,
   Lightbulb,
   Lock,
@@ -510,11 +511,25 @@ function VideoUrlField({ value = [], onChange, label = 'Video URLs' }) {
 
 function AboutMediaField({ value = [], onChange, uploadPhoto, folder }) {
   const media = Array.isArray(value) ? value : [];
-  const addItem = item => onChange([...media, item]);
+  const [selectedIndex, setSelectedIndex] = useState(null);
+  const [dropTargetIndex, setDropTargetIndex] = useState(null);
+  const selectedItem = selectedIndex === null ? null : media[selectedIndex];
+  const addItem = item => {
+    setSelectedIndex(media.length);
+    onChange([...media, item]);
+  };
   const updateItem = (index, patch) => onChange(media.map((item, itemIndex) => (
     itemIndex === index ? { ...item, ...patch } : item
   )));
-  const removeItem = index => onChange(media.filter((_, itemIndex) => itemIndex !== index));
+  const removeItem = index => {
+    const nextMedia = media.filter((_, itemIndex) => itemIndex !== index);
+    onChange(nextMedia);
+    setSelectedIndex(current => {
+      if (current === null || nextMedia.length === 0) return null;
+      if (current === index) return Math.min(index, nextMedia.length - 1);
+      return current > index ? current - 1 : current;
+    });
+  };
   const moveItem = (fromIndex, toIndex) => {
     if (fromIndex === toIndex) return;
 
@@ -522,6 +537,13 @@ function AboutMediaField({ value = [], onChange, uploadPhoto, folder }) {
     const [movedItem] = nextMedia.splice(fromIndex, 1);
     nextMedia.splice(toIndex, 0, movedItem);
     onChange(nextMedia);
+    setSelectedIndex(current => {
+      if (current === null) return null;
+      if (current === fromIndex) return toIndex;
+      if (fromIndex < current && toIndex >= current) return current - 1;
+      if (fromIndex > current && toIndex <= current) return current + 1;
+      return current;
+    });
   };
 
   return (
@@ -556,6 +578,7 @@ function AboutMediaField({ value = [], onChange, uploadPhoto, folder }) {
                   src: await uploadOrReadPhoto(file, uploadPhoto, folder),
                   description: '',
                 })));
+                setSelectedIndex(media.length);
                 onChange([...media, ...uploaded]);
               }
               e.target.value = '';
@@ -577,8 +600,10 @@ function AboutMediaField({ value = [], onChange, uploadPhoto, folder }) {
                   src: await readMediaFile(file),
                   description: '',
                 })));
+                setSelectedIndex(media.length);
                 onChange([...media, ...uploaded]);
               }
+              e.target.value = '';
             }}
           />
         </label>
@@ -590,57 +615,89 @@ function AboutMediaField({ value = [], onChange, uploadPhoto, folder }) {
         <div className="admin-about-media-list">
           {media.map((item, index) => (
             <div
-              className="admin-about-media-item"
+              className={`admin-about-media-item${selectedIndex === index ? ' is-selected' : ''}${dropTargetIndex === index ? ' is-drop-target' : ''}`}
               key={`${item.src}-${index}`}
               draggable
+              role="button"
+              tabIndex={0}
+              aria-label={`Select media ${index + 1} for editing`}
+              aria-pressed={selectedIndex === index}
+              onClick={() => setSelectedIndex(index)}
+              onKeyDown={e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setSelectedIndex(index);
+                }
+              }}
               onDragStart={e => {
                 e.dataTransfer.effectAllowed = 'move';
                 e.dataTransfer.setData('text/plain', String(index));
               }}
+              onDragEnd={() => setDropTargetIndex(null)}
               onDragOver={e => {
                 e.preventDefault();
                 e.dataTransfer.dropEffect = 'move';
+                setDropTargetIndex(index);
               }}
               onDrop={e => {
                 e.preventDefault();
                 const fromIndex = Number(e.dataTransfer.getData('text/plain'));
                 if (Number.isInteger(fromIndex)) moveItem(fromIndex, index);
+                setDropTargetIndex(null);
               }}
             >
-              <span className="admin-about-media-drag-handle">Drag to reorder</span>
-              <Field label={`Media ${index + 1} type`}>
-                <select value={item.type || 'image'} onChange={e => updateItem(index, { type: e.target.value })}>
-                  <option value="image">Photo</option>
-                  <option value="video">Video</option>
-                </select>
-              </Field>
-              <Field label="Media URL">
-                <input
-                  value={item.src || ''}
-                  placeholder={item.type === 'video' ? 'Paste a video URL' : 'Paste a photo URL'}
-                  onChange={e => updateItem(index, { src: e.target.value })}
-                />
-              </Field>
-              <Field label="Description">
-                <textarea
-                  value={item.description || ''}
-                  rows={3}
-                  placeholder="Write the caption or story for this photo/video."
-                  onChange={e => updateItem(index, { description: e.target.value })}
-                />
-              </Field>
-              <div className="admin-about-media-preview">
+              <span className="admin-about-media-drag-handle">
+                <GripVertical size={14} /> {index + 1}
+              </span>
+              <div className="admin-about-media-thumb">
                 {item.type === 'video' && item.src ? (
-                  <video src={item.src} controls />
+                  <video src={resolveMediaUrl(item.src)} muted playsInline preload="metadata" />
                 ) : item.src ? (
                   <img src={resolveMediaUrl(item.src)} alt="" />
                 ) : (
                   <div className="admin-entry-thumb admin-entry-thumb--empty">{item.type === 'video' ? 'V' : 'P'}</div>
                 )}
-                <button type="button" onClick={() => removeItem(index)}>Remove</button>
               </div>
+              <span className="admin-about-media-card-label">
+                <strong>{item.type === 'video' ? 'Video' : 'Photo'} {index + 1}</strong>
+                <small>{selectedIndex === index ? 'Editing' : 'Select'}</small>
+              </span>
             </div>
           ))}
+        </div>
+      )}
+
+      {selectedItem && (
+        <div className="admin-about-media-editor">
+          <div className="admin-about-media-editor-head">
+            <strong>Edit {selectedItem.type === 'video' ? 'video' : 'photo'} {selectedIndex + 1}</strong>
+            <button type="button" onClick={() => removeItem(selectedIndex)}>
+              <Trash2 size={15} /> Remove
+            </button>
+          </div>
+          <div className="admin-about-media-editor-grid">
+            <Field label="Media type">
+              <select value={selectedItem.type || 'image'} onChange={e => updateItem(selectedIndex, { type: e.target.value })}>
+                <option value="image">Photo</option>
+                <option value="video">Video</option>
+              </select>
+            </Field>
+            <Field label="Media URL">
+              <input
+                value={selectedItem.src || ''}
+                placeholder={selectedItem.type === 'video' ? 'Paste a video URL' : 'Paste a photo URL'}
+                onChange={e => updateItem(selectedIndex, { src: e.target.value })}
+              />
+            </Field>
+          </div>
+          <Field label="Description">
+            <textarea
+              value={selectedItem.description || ''}
+              rows={3}
+              placeholder="Write the caption or story for this photo/video."
+              onChange={e => updateItem(selectedIndex, { description: e.target.value })}
+            />
+          </Field>
         </div>
       )}
     </div>

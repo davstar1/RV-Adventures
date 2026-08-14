@@ -42,9 +42,24 @@
   background: rgba(255,255,255,.07);
   padding: 10px 12px;
   cursor: pointer;
+  transition: border-color .2s ease, background .2s ease, box-shadow .2s ease;
 }
 
-.photo-comments-toggle span {
+.photo-comments-toggle:hover,
+.photo-comments-toggle:focus-visible {
+  border-color: rgba(245,168,53,.42);
+  background: rgba(245,168,53,.1);
+  box-shadow: 0 10px 24px rgba(0,0,0,.22);
+  outline: none;
+}
+
+.photo-comments-toggle-copy {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.photo-comments-toggle-copy strong {
   min-width: 0;
   display: inline-flex;
   align-items: center;
@@ -54,6 +69,19 @@
   font-weight: 900;
   letter-spacing: .08em;
   text-transform: uppercase;
+}
+
+.photo-comments-toggle-copy small {
+  min-width: 0;
+  display: block;
+  color: rgba(255,255,255,.62);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: none;
+  white-space: nowrap;
 }
 
 .photo-comments-toggle em {
@@ -73,12 +101,25 @@
 
 .photo-comments-body {
   margin-top: 12px;
+  display: flex;
+  flex-direction: column;
 }
 
 .photo-comments--collapsible .photo-comments-body {
-  max-height: 310px;
+  max-height: 0;
   overflow: auto;
   padding-right: 4px;
+  margin-top: 0;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: max-height .36s ease, opacity .24s ease, transform .3s ease, margin-top .24s ease;
+}
+
+.photo-comments--collapsible.is-open .photo-comments-body {
+  max-height: 340px;
+  margin-top: 12px;
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .photo-comments-form {
@@ -142,6 +183,7 @@
 
 .photo-comments-list {
   display: grid;
+  align-content: start;
   gap: 10px;
   margin-top: 14px;
   max-height: 240px;

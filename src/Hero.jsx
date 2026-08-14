@@ -120,7 +120,6 @@ export default function Hero() {
   const [playlistStarted, setPlaylistStarted] = useState(false);
   const [musicPlaying, setMusicPlaying] = useState(false);
   const [shuffleMusic, setShuffleMusic] = useState(false);
-  const [commentsOpen, setCommentsOpen] = useState(false);
   const audioRef = useRef(null);
   const activeSongIndex = musicUrls.length > 0 ? songIndex % musicUrls.length : 0;
   const currentSlide = visibleSlides[slideIndex % visibleSlides.length];
@@ -148,14 +147,14 @@ export default function Hero() {
   };
 
   useEffect(() => {
-    if (visibleSlides.length < 2 || commentsOpen) return undefined;
+    if (visibleSlides.length < 2) return undefined;
 
     const timer = window.setInterval(() => {
       setSlideIndex(current => (current + 1) % visibleSlides.length);
     }, 5200);
 
     return () => window.clearInterval(timer);
-  }, [commentsOpen, visibleSlides.length]);
+  }, [visibleSlides.length]);
 
   useEffect(() => {
     if (!playlistStarted || !currentSong || !audioRef.current) return;
@@ -234,120 +233,121 @@ export default function Hero() {
 
         <div className="hero-feature" aria-label="Featured site sections">
           {currentSlide || currentSong ? (
-            <div className="hero-slideshow" aria-label="Adventure photo slideshow">
-              {currentSlide ? (
-                <figure className="hero-slide hero-slide-active" key={currentSlide.id || currentSlide.image}>
-                  <img
-                    src={resolveMediaUrl(currentSlide.image)}
-                    alt={currentSlide.title || 'Open Road adventure'}
-                    loading="eager"
-                    fetchPriority="high"
-                    decoding="async"
-                  />
-                  <PhotoLike id={currentSlide.image} className="photo-like--floating" />
-                </figure>
-              ) : (
-                <div className="hero-slide hero-slide-empty">
-                  <Compass size={76} strokeWidth={1.1} />
-                  <span>Road soundtrack loaded</span>
-                </div>
-              )}
-              {currentSlide && nextSlide && nextSlide !== currentSlide && (
-                <img
-                  className="hero-slide-preload"
-                  src={resolveMediaUrl(nextSlide.image)}
-                  alt=""
-                  loading="lazy"
-                  fetchPriority="low"
-                  decoding="async"
-                  aria-hidden="true"
-                />
-              )}
-              {currentSlide && (currentSlide.title || currentSlide.caption) && (
-                <div className="hero-slide-caption">
-                  <div className="hero-slide-caption-track">
-                    {currentSlide.title && <strong>{currentSlide.title}</strong>}
-                    {currentSlide.caption && <span>{currentSlide.caption}</span>}
+            <div className="hero-slideshow-shell">
+              <div className="hero-slideshow" aria-label="Adventure photo slideshow">
+                {currentSlide ? (
+                  <figure className="hero-slide hero-slide-active" key={currentSlide.id || currentSlide.image}>
+                    <img
+                      src={resolveMediaUrl(currentSlide.image)}
+                      alt={currentSlide.title || 'Open Road adventure'}
+                      loading="eager"
+                      fetchPriority="high"
+                      decoding="async"
+                    />
+                    <PhotoLike id={currentSlide.image} className="photo-like--floating" />
+                  </figure>
+                ) : (
+                  <div className="hero-slide hero-slide-empty">
+                    <Compass size={76} strokeWidth={1.1} />
+                    <span>Road soundtrack loaded</span>
                   </div>
-                </div>
-              )}
-              {currentSong && (
-                <div className="hero-music-player">
-                  <div className="hero-music-label">
-                    <span>Now playing</span>
-                    <strong title={currentTrackName}>{currentTrackName}</strong>
-                    <small>Road soundtrack {musicUrls.length > 1 ? `${activeSongIndex + 1}/${musicUrls.length}` : ''}</small>
-                    <div className={`hero-vu-meter${musicPlaying ? ' is-playing' : ''}`} aria-hidden="true">
-                      <i />
-                      <i />
-                      <i />
-                      <i />
-                      <i />
-                      <i />
-                      <i />
+                )}
+                {currentSlide && nextSlide && nextSlide !== currentSlide && (
+                  <img
+                    className="hero-slide-preload"
+                    src={resolveMediaUrl(nextSlide.image)}
+                    alt=""
+                    loading="lazy"
+                    fetchPriority="low"
+                    decoding="async"
+                    aria-hidden="true"
+                  />
+                )}
+                {currentSlide && (currentSlide.title || currentSlide.caption) && (
+                  <div className="hero-slide-caption">
+                    <div className="hero-slide-caption-track">
+                      {currentSlide.title && <strong>{currentSlide.title}</strong>}
+                      {currentSlide.caption && <span>{currentSlide.caption}</span>}
                     </div>
                   </div>
-                  <div className="hero-music-controls" aria-label="Music playlist controls">
-                    <button
-                      type="button"
-                      onClick={() => changeSong(-1)}
-                      disabled={musicUrls.length < 2}
-                      aria-label="Previous song"
-                    >
-                      <SkipBack size={15} />
-                    </button>
-                    <button
-                      type="button"
-                      className={shuffleMusic ? 'is-active' : ''}
-                      onClick={() => setShuffleMusic(current => !current)}
-                      disabled={musicUrls.length < 2}
-                      aria-label={shuffleMusic ? 'Turn shuffle off' : 'Turn shuffle on'}
-                      aria-pressed={shuffleMusic}
-                    >
-                      <Shuffle size={15} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => changeSong(1)}
-                      disabled={musicUrls.length < 2}
-                      aria-label="Next song"
-                    >
-                      <SkipForward size={15} />
-                    </button>
-                  </div>
-                  <audio
-                    ref={audioRef}
-                    src={resolveMediaUrl(currentSong)}
-                    controls
-                    preload="none"
-                    onPlay={() => {
-                      setPlaylistStarted(true);
-                      setMusicPlaying(true);
-                    }}
-                    onPause={event => {
-                      if (!event.currentTarget.ended) {
-                        setPlaylistStarted(false);
-                        setMusicPlaying(false);
-                      }
-                    }}
-                    onEnded={() => {
-                      setMusicPlaying(false);
-                      if (musicUrls.length > 1) {
+                )}
+                {currentSong && (
+                  <div className="hero-music-player">
+                    <div className="hero-music-label">
+                      <span>Now playing</span>
+                      <strong title={currentTrackName}>{currentTrackName}</strong>
+                      <small>Road soundtrack {musicUrls.length > 1 ? `${activeSongIndex + 1}/${musicUrls.length}` : ''}</small>
+                      <div className={`hero-vu-meter${musicPlaying ? ' is-playing' : ''}`} aria-hidden="true">
+                        <i />
+                        <i />
+                        <i />
+                        <i />
+                        <i />
+                        <i />
+                        <i />
+                      </div>
+                    </div>
+                    <div className="hero-music-controls" aria-label="Music playlist controls">
+                      <button
+                        type="button"
+                        onClick={() => changeSong(-1)}
+                        disabled={musicUrls.length < 2}
+                        aria-label="Previous song"
+                      >
+                        <SkipBack size={15} />
+                      </button>
+                      <button
+                        type="button"
+                        className={shuffleMusic ? 'is-active' : ''}
+                        onClick={() => setShuffleMusic(current => !current)}
+                        disabled={musicUrls.length < 2}
+                        aria-label={shuffleMusic ? 'Turn shuffle off' : 'Turn shuffle on'}
+                        aria-pressed={shuffleMusic}
+                      >
+                        <Shuffle size={15} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => changeSong(1)}
+                        disabled={musicUrls.length < 2}
+                        aria-label="Next song"
+                      >
+                        <SkipForward size={15} />
+                      </button>
+                    </div>
+                    <audio
+                      ref={audioRef}
+                      src={resolveMediaUrl(currentSong)}
+                      controls
+                      preload="none"
+                      onPlay={() => {
                         setPlaylistStarted(true);
-                        changeSong(1);
-                      }
-                    }}
-                  />
-                </div>
-              )}
+                        setMusicPlaying(true);
+                      }}
+                      onPause={event => {
+                        if (!event.currentTarget.ended) {
+                          setPlaylistStarted(false);
+                          setMusicPlaying(false);
+                        }
+                      }}
+                      onEnded={() => {
+                        setMusicPlaying(false);
+                        if (musicUrls.length > 1) {
+                          setPlaylistStarted(true);
+                          changeSong(1);
+                        }
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
               {currentSlide && (
                 <div className="hero-photo-comments">
                   <PhotoComments
                     photoId="home-slideshow"
-                    title="Slideshow comments"
+                    title="Comments"
                     collapsible
-                    defaultOpen={false}
-                    onOpenChange={setCommentsOpen}
+                    defaultOpen
                   />
                 </div>
               )}

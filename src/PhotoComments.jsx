@@ -26,6 +26,7 @@ export default function PhotoComments({
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(collapsible ? defaultOpen : true);
   const id = String(photoId || '').trim();
+  const latestComment = comments.at(-1);
 
   useEffect(() => {
     if (!id || !isSupabaseConfigured) return undefined;
@@ -82,7 +83,14 @@ export default function PhotoComments({
           onClick={() => setIsOpen(current => !current)}
           aria-expanded={isOpen}
         >
-          <span><MessageCircle size={15} /> {title}</span>
+          <span className="photo-comments-toggle-copy">
+            <strong><MessageCircle size={15} /> {isOpen ? 'Hide comments' : title}</strong>
+            <small>
+              {latestComment
+                ? `${latestComment.name}: ${latestComment.comment}`
+                : 'Add a comment or read what visitors shared.'}
+            </small>
+          </span>
           <em>{comments.length}</em>
           <ChevronDown size={16} />
         </button>
@@ -93,8 +101,12 @@ export default function PhotoComments({
         </div>
       )}
 
-      {isOpen && (
-        <div className="photo-comments-body">
+      {(isOpen || collapsible) && (
+        <div
+          className="photo-comments-body"
+          aria-hidden={collapsible && !isOpen}
+          inert={collapsible && !isOpen ? '' : undefined}
+        >
           {!isSupabaseConfigured ? (
             <p className="photo-comments-status">Comments need Supabase connected before they can be saved.</p>
           ) : (

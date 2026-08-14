@@ -230,7 +230,6 @@ export default function OwnerIntro() {
             </div>
             <div className="owner-modal-copy">
               <span className="eyebrow">About Us</span>
-              <h3>{profile?.title || 'A note from the road'}</h3>
               <div className="owner-modal-text">
                 <p>{current.description || 'Add a description for this photo or video in the About Us section of Admin.'}</p>
               </div>

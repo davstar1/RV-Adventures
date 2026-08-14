@@ -331,12 +331,6 @@
   flex-direction: column;
 }
 
-.owner-modal-copy h3 {
-  color: var(--text);
-  font-size: clamp(26px, 4vw, 42px);
-  margin: 10px 0 8px;
-}
-
 .owner-modal-text {
   flex: 1;
   min-height: 0;

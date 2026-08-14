@@ -58,13 +58,16 @@
 }
 
 .owner-story-wrap {
+  display: flex;
+  justify-content: center;
   margin-top: 54px;
   scroll-margin-top: 110px;
 }
 
 .owner-story {
-  max-width: 580px;
-  margin: 0;
+  width: min(100%, 1040px);
+  max-width: 1040px;
+  margin: 0 auto;
   border: 1px solid rgba(255,255,255,.1);
   border-radius: 8px;
   background:
@@ -89,7 +92,7 @@
 .owner-story-toggle strong {
   display: block;
   color: var(--text);
-  font-size: clamp(30px, 4.4vw, 54px);
+  font-size: clamp(28px, 3.6vw, 46px);
   line-height: 1.08;
   margin-top: 10px;
 }
@@ -109,8 +112,11 @@
 }
 
 .owner-story-body p {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
   color: var(--muted);
-  font-size: 17px;
+  font-size: 18px;
   line-height: 1.8;
   white-space: pre-line;
 }
@@ -386,6 +392,23 @@
 }
 
 @media (max-width: 560px) {
+  .owner-story-wrap {
+    margin-top: 38px;
+  }
+
+  .owner-story-toggle {
+    padding: 22px 20px;
+  }
+
+  .owner-story-body {
+    padding: 0 20px 24px;
+  }
+
+  .owner-story-body p {
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
   .owner-collage {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     grid-auto-rows: 148px;

@@ -303,7 +303,7 @@
 
 .trust-num {
   color: var(--gold-lt);
-  font-family: 'Fraunces', serif;
+  font-family: var(--display-font);
   font-size: 26px;
   font-weight: 700;
   line-height: 1;

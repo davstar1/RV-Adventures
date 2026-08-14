@@ -43,7 +43,7 @@
 }
 .footer-logo svg { color: var(--gold); }
 .footer-logo > div { display: flex; flex-direction: column; line-height: 1; }
-.footer-logo-main { font-family: 'Fraunces',serif; font-size: 15px; font-weight: 700; }
+.footer-logo-main { font-family: var(--display-font); font-size: 15px; font-weight: 700; }
 .footer-logo-sub { font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: var(--sand-lt); margin-top: 3px; }
 .footer-tagline { font-size: 14px; line-height: 1.6; max-width: 280px; margin-bottom: 20px; }
 .footer-socials { display: flex; gap: 12px; }

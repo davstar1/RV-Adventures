@@ -21,7 +21,7 @@
 .nav-logo-icon { color: var(--gold); }
 .nav-logo span { display: flex; flex-direction: column; line-height: 1; }
 .nav-logo-main {
-  font-family: 'Fraunces', serif;
+  font-family: var(--display-font);
   font-size: 15px; font-weight: 700;
   letter-spacing: .02em; color: var(--white);
 }

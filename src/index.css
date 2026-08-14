@@ -1,8 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,700;0,9..144,900;1,9..144,300;1,9..144,700;1,9..144,900&family=DM+Sans:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,700;0,9..144,900;1,9..144,300;1,9..144,700;1,9..144,900&family=Lato:wght@400;700;900&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
+  --display-font: 'Lato', 'DM Sans', system-ui, sans-serif;
+  /* To switch back: --display-font: 'Fraunces', Georgia, serif; */
+
   --ink:       #152331;
   --pine:      #294617;
   --pine-mid:  #416c24;
@@ -36,7 +39,7 @@ body {
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;
 }
-h1,h2,h3,h4,h5 { font-family: 'Fraunces', Georgia, serif; line-height: 1.15; }
+h1,h2,h3,h4,h5 { font-family: var(--display-font); line-height: 1.15; }
 a { text-decoration: none; color: inherit; }
 img { display: block; max-width: 100%; }
 button { font-family: 'DM Sans', sans-serif; cursor: pointer; }

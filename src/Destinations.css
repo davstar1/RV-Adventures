@@ -80,7 +80,7 @@
   gap: 6px;
   width: 100%;
 }
-.dest-name { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 700; flex: 1; }
+.dest-name { font-family: var(--display-font); font-size: 18px; font-weight: 700; flex: 1; }
 .dest-card:first-child .dest-name { font-size: 26px; }
 .dest-count { font-size: 12px; color: var(--sand-lt); font-weight: 500; }
 

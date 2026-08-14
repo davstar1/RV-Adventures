@@ -22,7 +22,7 @@ export default function Videos() {
     <section id="videos" className="vid-section">
       <div className="section-wrap">
         <span className="eyebrow">On the Channel</span>
-        <h2 className="vid-heading">Watch & Learn</h2>
+        <h2 className="vid-heading">Learn with us</h2>
         <p className="vid-sub">
           Full RV tours, build walkthroughs, destination vlogs — everything we film on the road.
         </p>

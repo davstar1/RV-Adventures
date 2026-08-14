@@ -1541,12 +1541,6 @@ export default function Admin() {
   return (
     <main id="admin" className="admin-page">
       <div className="section-wrap admin-wrap">
-        <div className="admin-topbar">
-          <button className="admin-reset" onClick={async () => { await signOutAdmin(); setSession(null); }}>
-            <LogOut size={15} /> Sign out
-          </button>
-        </div>
-
         <header className="admin-header">
           <span className="eyebrow">Site Manager</span>
           <p>Add YouTube videos, upload photos, publish stories, add destination cards, write gear reviews, and seed community posts.</p>
@@ -1582,6 +1576,12 @@ export default function Admin() {
           </aside>
 
           <section className="admin-panel">
+            <div className="admin-panel-actions">
+              <BackToSiteButton />
+              <button className="admin-reset" onClick={async () => { await signOutAdmin(); setSession(null); }}>
+                <LogOut size={15} /> Sign out
+              </button>
+            </div>
             <div className="admin-panel-head">
               <h2>{tabs.find(tab => tab.id === active)?.label}</h2>
             <div className="admin-panel-status">
@@ -1607,7 +1607,6 @@ export default function Admin() {
           </section>
         </div>
       </div>
-      <BackToSiteButton floating />
     </main>
   );
 }

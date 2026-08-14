@@ -222,8 +222,8 @@ async function optimizePhoto(file, maxWidth = 1200, quality = 0.68) {
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, '') || 'photo';
 
-      resolve(new File([blob], `${baseName}.jpg`, { type: 'image/jpeg' }));
-    }, 'image/jpeg', quality);
+      resolve(new File([blob], `${baseName}.webp`, { type: 'image/webp' }));
+    }, 'image/webp', quality);
   });
 }
 

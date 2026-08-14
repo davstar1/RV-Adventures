@@ -515,6 +515,14 @@ function AboutMediaField({ value = [], onChange, uploadPhoto, folder }) {
     itemIndex === index ? { ...item, ...patch } : item
   )));
   const removeItem = index => onChange(media.filter((_, itemIndex) => itemIndex !== index));
+  const moveItem = (fromIndex, toIndex) => {
+    if (fromIndex === toIndex) return;
+
+    const nextMedia = [...media];
+    const [movedItem] = nextMedia.splice(fromIndex, 1);
+    nextMedia.splice(toIndex, 0, movedItem);
+    onChange(nextMedia);
+  };
 
   return (
     <div className="admin-gallery-field admin-about-media-field">
@@ -581,7 +589,25 @@ function AboutMediaField({ value = [], onChange, uploadPhoto, folder }) {
       ) : (
         <div className="admin-about-media-list">
           {media.map((item, index) => (
-            <div className="admin-about-media-item" key={`${item.src}-${index}`}>
+            <div
+              className="admin-about-media-item"
+              key={`${item.src}-${index}`}
+              draggable
+              onDragStart={e => {
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', String(index));
+              }}
+              onDragOver={e => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+              }}
+              onDrop={e => {
+                e.preventDefault();
+                const fromIndex = Number(e.dataTransfer.getData('text/plain'));
+                if (Number.isInteger(fromIndex)) moveItem(fromIndex, index);
+              }}
+            >
+              <span className="admin-about-media-drag-handle">Drag to reorder</span>
               <Field label={`Media ${index + 1} type`}>
                 <select value={item.type || 'image'} onChange={e => updateItem(index, { type: e.target.value })}>
                   <option value="image">Photo</option>

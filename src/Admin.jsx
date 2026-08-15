@@ -18,6 +18,7 @@ import {
   Star,
   Trash2,
   Type,
+  Unlink,
   Wrench,
 } from 'lucide-react';
 import {
@@ -32,6 +33,7 @@ import {
 } from './contentStore';
 import { categories } from './data';
 import {
+  deleteMediaFromGitHub,
   getAdminSession,
   deletePhotoComment,
   fetchAdminPhotoComments,
@@ -99,8 +101,6 @@ const emptyForms = {
     body: '',
     storyTitle: '',
     storyBody: '',
-    image: '',
-    gallery: [],
     media: [],
   },
   slides: {
@@ -289,7 +289,31 @@ function photoFolderForActive(active, form = {}) {
   return 'uploads';
 }
 
-function PhotoField({ label, value, onChange, uploadPhoto, folder, onAdditionalPhotos, onRemove }) {
+function isRepositoryMedia(value) {
+  const url = String(value || '').trim();
+  if (!url) return false;
+  if (/^\/?photos\//i.test(url) || /^public\/photos\//i.test(url)) return true;
+
+  try {
+    const parsed = new URL(url);
+    return (
+      parsed.hostname === 'raw.githubusercontent.com'
+      && parsed.pathname.includes('/rv-adventures/main/public/photos/')
+    ) || (
+      parsed.hostname === 'github.com'
+      && /\/rv-adventures\/(?:blob|raw)\/main\/public\/photos\//i.test(parsed.pathname)
+    ) || (
+      parsed.hostname.endsWith('.github.io')
+      && /\/rv-adventures\/photos\//i.test(parsed.pathname)
+    );
+  } catch {
+    return false;
+  }
+}
+
+function PhotoField({ label, value, onChange, uploadPhoto, folder, onAdditionalPhotos, onRemove, removeDisabled = false, removeLabel = 'Remove photo', deleteMedia }) {
+  const removePhoto = onRemove || (() => onChange(''));
+
   return (
     <div className="admin-photo-field admin-audio-field">
       <Field label={label}>
@@ -321,9 +345,20 @@ function PhotoField({ label, value, onChange, uploadPhoto, folder, onAdditionalP
             }}
           />
         </label>
-        {value && onRemove && (
-          <button type="button" className="admin-photo-remove" onClick={onRemove}>
-            <Trash2 size={16} /> Remove main photo
+        {(value || onRemove) && (
+          <button type="button" className="admin-photo-remove" onClick={removePhoto} disabled={removeDisabled}>
+            <Unlink size={16} /> {removeLabel}
+          </button>
+        )}
+        {value && isRepositoryMedia(value) && deleteMedia && (
+          <button
+            type="button"
+            className="admin-file-delete"
+            onClick={async () => {
+              if (await deleteMedia(value)) removePhoto();
+            }}
+          >
+            <Trash2 size={16} /> Delete permanently
           </button>
         )}
       </div>
@@ -331,7 +366,7 @@ function PhotoField({ label, value, onChange, uploadPhoto, folder, onAdditionalP
   );
 }
 
-function PhotoGalleryField({ value = [], onChange, label = 'Destination gallery photo URLs', uploadPhoto, folder }) {
+function PhotoGalleryField({ value = [], onChange, label = 'Destination gallery photo URLs', uploadPhoto, folder, deleteMedia }) {
   const photos = Array.isArray(value) ? value : [];
   const visiblePhotos = photos
     .map((photo, index) => ({ photo, index }))
@@ -397,7 +432,22 @@ function PhotoGalleryField({ value = [], onChange, label = 'Destination gallery 
             >
               <span className="admin-gallery-drag-handle">Drag to reorder</span>
               <img src={resolveMediaUrl(photo)} alt="" />
-              <button type="button" onClick={() => removePhoto(index)}>Remove</button>
+              <div className="admin-gallery-item-actions">
+                <button type="button" onClick={() => removePhoto(index)}>
+                  <Unlink size={14} /> Remove
+                </button>
+                {isRepositoryMedia(photo) && deleteMedia && (
+                  <button
+                    type="button"
+                    className="admin-file-delete"
+                    onClick={async () => {
+                      if (await deleteMedia(photo)) removePhoto(index);
+                    }}
+                  >
+                    <Trash2 size={14} /> Delete permanently
+                  </button>
+                )}
+              </div>
             </div>
           ))}
         </div>
@@ -414,7 +464,7 @@ function cleanTrackName(value) {
     .trim();
 }
 
-function AudioField({ value = [], names = [], onChange, onNamesChange, uploadPhoto, folder }) {
+function AudioField({ value = [], names = [], onChange, onNamesChange, uploadPhoto, folder, deleteMedia }) {
   const songs = Array.isArray(value) ? value : [value].filter(Boolean);
   const trackNames = Array.isArray(names) ? names : [];
   const visibleSongs = songs
@@ -443,6 +493,14 @@ function AudioField({ value = [], names = [], onChange, onNamesChange, uploadPho
     nextNames.splice(toIndex, 0, movedName || '');
     onChange(nextSongs);
     onNamesChange(nextNames);
+  };
+  const removeSong = index => {
+    const nextSongs = songs.filter((_, songIndex) => songIndex !== index);
+    const alignedNames = songs.map((_, songIndex) => trackNames[songIndex] || '');
+    const nextNames = alignedNames.filter((_, songIndex) => songIndex !== index);
+
+    onChange(nextSongs);
+    onNamesChange?.(nextNames);
   };
 
   return (
@@ -488,6 +546,26 @@ function AudioField({ value = [], names = [], onChange, onNamesChange, uploadPho
               <Music size={16} />
               <strong>{name || `Track ${index + 1}`}</strong>
               <small>{song}</small>
+              <button
+                type="button"
+                className="admin-audio-remove"
+                onClick={() => removeSong(index)}
+                aria-label={`Remove ${name || `track ${index + 1}`}`}
+              >
+                <Unlink size={15} /> Remove
+              </button>
+              {isRepositoryMedia(song) && deleteMedia && (
+                <button
+                  type="button"
+                  className="admin-audio-delete admin-file-delete"
+                  onClick={async () => {
+                    if (await deleteMedia(song)) removeSong(index);
+                  }}
+                  aria-label={`Delete ${name || `track ${index + 1}`} permanently`}
+                >
+                  <Trash2 size={15} /> Delete permanently
+                </button>
+              )}
             </div>
           ))}
         </div>
@@ -530,7 +608,7 @@ function VideoUrlField({ value = [], onChange, label = 'Video URLs' }) {
   );
 }
 
-function AboutMediaField({ value = [], onChange, uploadPhoto, folder }) {
+function AboutMediaField({ value = [], onChange, uploadPhoto, folder, deleteMedia }) {
   const media = Array.isArray(value) ? value : [];
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [dropTargetIndex, setDropTargetIndex] = useState(null);
@@ -683,6 +761,30 @@ function AboutMediaField({ value = [], onChange, uploadPhoto, folder }) {
                 <strong>{item.type === 'video' ? 'Video' : 'Photo'} {index + 1}</strong>
                 <small>{selectedIndex === index ? 'Editing' : 'Select'}</small>
               </span>
+              <button
+                type="button"
+                className="admin-about-media-card-remove"
+                onClick={e => {
+                  e.stopPropagation();
+                  removeItem(index);
+                }}
+                aria-label={`Remove ${item.type === 'video' ? 'video' : 'photo'} ${index + 1} from entry`}
+              >
+                <Unlink size={14} />
+              </button>
+              {isRepositoryMedia(item.src) && deleteMedia && (
+                <button
+                  type="button"
+                  className="admin-about-media-card-delete"
+                  onClick={async e => {
+                    e.stopPropagation();
+                    if (await deleteMedia(item.src)) removeItem(index);
+                  }}
+                  aria-label={`Delete ${item.type === 'video' ? 'video' : 'photo'} ${index + 1} permanently`}
+                >
+                  <Trash2 size={14} />
+                </button>
+              )}
             </div>
           ))}
         </div>
@@ -692,9 +794,22 @@ function AboutMediaField({ value = [], onChange, uploadPhoto, folder }) {
         <div className="admin-about-media-editor">
           <div className="admin-about-media-editor-head">
             <strong>Edit {selectedItem.type === 'video' ? 'video' : 'photo'} {selectedIndex + 1}</strong>
-            <button type="button" onClick={() => removeItem(selectedIndex)}>
-              <Trash2 size={15} /> Remove
-            </button>
+            <div className="admin-about-media-editor-actions">
+              <button type="button" onClick={() => removeItem(selectedIndex)}>
+                <Unlink size={15} /> Remove
+              </button>
+              {isRepositoryMedia(selectedItem.src) && deleteMedia && (
+                <button
+                  type="button"
+                  className="admin-file-delete"
+                  onClick={async () => {
+                    if (await deleteMedia(selectedItem.src)) removeItem(selectedIndex);
+                  }}
+                >
+                  <Trash2 size={15} /> Delete permanently
+                </button>
+              )}
+            </div>
           </div>
           <div className="admin-about-media-editor-grid">
             <Field label="Media type">
@@ -725,7 +840,7 @@ function AboutMediaField({ value = [], onChange, uploadPhoto, folder }) {
   );
 }
 
-function AdminForm({ active, form, setForm, onSave, isEditing, uploadPhoto }) {
+function AdminForm({ active, form, setForm, onSave, isEditing, uploadPhoto, deleteMedia }) {
   const patch = values => setForm(current => ({ ...current, ...values }));
   const actionLabel = label => isEditing ? `Update ${label}` : `Add ${label}`;
   const fixedPostCategory = activeTabFor(active).category;
@@ -797,6 +912,7 @@ function AdminForm({ active, form, setForm, onSave, isEditing, uploadPhoto }) {
           onChange={image => patch({ image })}
           uploadPhoto={uploadPhoto}
           folder={uploadFolder}
+          deleteMedia={deleteMedia}
           onAdditionalPhotos={photos => patch({ gallery: [...(form.gallery || []), ...photos] })}
         />
         <PhotoGalleryField
@@ -805,6 +921,7 @@ function AdminForm({ active, form, setForm, onSave, isEditing, uploadPhoto }) {
           onChange={gallery => patch({ gallery })}
           uploadPhoto={uploadPhoto}
           folder={uploadFolder}
+          deleteMedia={deleteMedia}
         />
         <VideoUrlField
           label={`${postLabel} video URLs`}
@@ -837,7 +954,7 @@ function AdminForm({ active, form, setForm, onSave, isEditing, uploadPhoto }) {
         <Field label="Channel">
           <input value={form.channel} onChange={e => patch({ channel: e.target.value })} />
         </Field>
-        <PhotoField label="Thumbnail override" value={form.thumb} onChange={thumb => patch({ thumb })} uploadPhoto={uploadPhoto} folder={uploadFolder} />
+        <PhotoField label="Thumbnail override" value={form.thumb} onChange={thumb => patch({ thumb })} uploadPhoto={uploadPhoto} folder={uploadFolder} deleteMedia={deleteMedia} />
         <button className="admin-save" onClick={onSave}><Plus size={16} /> {actionLabel('Video')}</button>
       </div>
     );
@@ -849,7 +966,6 @@ function AdminForm({ active, form, setForm, onSave, isEditing, uploadPhoto }) {
         <Field label="About section title">
           <input value={form.title} placeholder="Meet the Open Road crew" onChange={e => patch({ title: e.target.value })} />
         </Field>
-        <PhotoField label="Main about photo" value={form.image} onChange={image => patch({ image })} uploadPhoto={uploadPhoto} folder={uploadFolder} />
         <Field label="About us story">
           <textarea value={form.body} rows={7} placeholder="Write your story, why you travel, and what visitors can expect from the site." onChange={e => patch({ body: e.target.value })} />
         </Field>
@@ -859,7 +975,7 @@ function AdminForm({ active, form, setForm, onSave, isEditing, uploadPhoto }) {
         <Field label="Our Story">
           <textarea value={form.storyBody} rows={8} placeholder="Write the story of how you met, what pulled you toward the road, and the moments that shaped your journey together." onChange={e => patch({ storyBody: e.target.value })} />
         </Field>
-        <AboutMediaField value={form.media} onChange={media => patch({ media })} uploadPhoto={uploadPhoto} folder={uploadFolder} />
+        <AboutMediaField value={form.media} onChange={media => patch({ media })} uploadPhoto={uploadPhoto} folder={uploadFolder} deleteMedia={deleteMedia} />
         <button className="admin-save" onClick={onSave}><Plus size={16} /> {actionLabel('About Section')}</button>
       </div>
     );
@@ -877,6 +993,7 @@ function AdminForm({ active, form, setForm, onSave, isEditing, uploadPhoto }) {
           onChange={images => patch({ images })}
           uploadPhoto={uploadPhoto}
           folder={uploadFolder}
+          deleteMedia={deleteMedia}
         />
         <Field label="Caption">
           <textarea value={form.caption} rows={4} placeholder="Optional short note about this photo." onChange={e => patch({ caption: e.target.value })} />
@@ -888,6 +1005,7 @@ function AdminForm({ active, form, setForm, onSave, isEditing, uploadPhoto }) {
           onNamesChange={musicNames => patch({ musicNames })}
           uploadPhoto={uploadPhoto}
           folder="music"
+          deleteMedia={deleteMedia}
         />
         <button className="admin-save" onClick={onSave}><Plus size={16} /> {actionLabel('Slideshow Entry')}</button>
       </div>
@@ -907,21 +1025,25 @@ function AdminForm({ active, form, setForm, onSave, isEditing, uploadPhoto }) {
           label="Destination photo"
           value={form.image}
           onChange={image => patch({ image })}
+          removeDisabled={!String(form.image || '').trim() && !(form.gallery || []).some(photo => String(photo || '').trim())}
           onRemove={() => {
-            const mainPhoto = String(form.image || '').trim();
+            const mainPhoto = String(form.image || '').trim()
+              || String((form.gallery || []).find(photo => String(photo || '').trim()) || '').trim();
             patch({
               image: '',
               gallery: (form.gallery || []).filter(photo => String(photo || '').trim() !== mainPhoto),
             });
           }}
+          removeLabel="Remove main photo"
           uploadPhoto={uploadPhoto}
           folder={uploadFolder}
+          deleteMedia={deleteMedia}
           onAdditionalPhotos={photos => patch({ gallery: [...(form.gallery || []), ...photos] })}
         />
         <Field label="Destination description">
           <textarea value={form.description} rows={5} onChange={e => patch({ description: e.target.value })} />
         </Field>
-        <PhotoGalleryField value={form.gallery} onChange={gallery => patch({ gallery })} uploadPhoto={uploadPhoto} folder={uploadFolder} />
+        <PhotoGalleryField value={form.gallery} onChange={gallery => patch({ gallery })} uploadPhoto={uploadPhoto} folder={uploadFolder} deleteMedia={deleteMedia} />
         <VideoUrlField value={form.videoUrls} onChange={videoUrls => patch({ videoUrls })} />
         <button className="admin-save" onClick={onSave}><Plus size={16} /> {actionLabel('Destination')}</button>
       </div>
@@ -940,7 +1062,7 @@ function AdminForm({ active, form, setForm, onSave, isEditing, uploadPhoto }) {
         <Field label="Price">
           <input value={form.price} placeholder="$129" onChange={e => patch({ price: e.target.value })} />
         </Field>
-        <PhotoField label="Gear photo URL" value={form.image} onChange={image => patch({ image })} uploadPhoto={uploadPhoto} folder={uploadFolder} />
+        <PhotoField label="Gear photo URL" value={form.image} onChange={image => patch({ image })} uploadPhoto={uploadPhoto} folder={uploadFolder} deleteMedia={deleteMedia} />
         <Field label="Rating">
           <input type="number" min="1" max="5" step=".1" value={form.rating} onChange={e => patch({ rating: e.target.value })} />
         </Field>
@@ -1076,8 +1198,6 @@ function formFromEntry(active, entry) {
       body: entry.body || '',
       storyTitle: entry.storyTitle || '',
       storyBody: entry.storyBody || '',
-      image: '',
-      gallery: [],
       media: mediaFromAboutEntry(entry),
     };
   }
@@ -1140,6 +1260,7 @@ function buildPayload(active, form) {
 
   if (isPostTab(active)) {
     if (!form.title || !form.excerpt) return { error: 'Add a title and excerpt first.' };
+    const tag = String(form.tag || '').trim();
     const gallery = Array.from(new Set(
       [form.image, ...(form.gallery || [])]
         .map(value => String(value || '').trim())
@@ -1150,7 +1271,7 @@ function buildPayload(active, form) {
       payload: {
         slug: slugify(form.title),
         category: categoryForActive(active, form),
-        tag: form.tag || null,
+        tag: tag || null,
         title: form.title,
         excerpt: form.excerpt,
         image: form.image || gallery[0] || '',
@@ -1162,7 +1283,7 @@ function buildPayload(active, form) {
         readTime: form.readTime || '5 min',
         likes: 0,
         comments: 0,
-        sponsored: form.tag?.toLowerCase() === 'sponsored',
+        sponsored: tag.toLowerCase() === 'sponsored',
       },
     };
   }
@@ -1187,16 +1308,12 @@ function buildPayload(active, form) {
     const media = (form.media || [])
       .map(cleanAboutMediaItem)
       .filter(item => item.src);
-    const fallbackPhoto = String(form.image || '').trim();
-    const mergedMedia = media.length > 0
-      ? media
-      : (fallbackPhoto ? [{ type: 'image', src: fallbackPhoto, description: '' }] : []);
     const title = form.title.trim() || 'A note from the road';
     const body = form.body.trim();
     const storyTitle = form.storyTitle.trim();
     const storyBody = form.storyBody.trim();
 
-    if (!body && !storyBody && mergedMedia.length === 0) {
+    if (!body && !storyBody && media.length === 0) {
       return { error: 'Add an About story, photo URL, or video URL first.' };
     }
 
@@ -1206,9 +1323,9 @@ function buildPayload(active, form) {
         body,
         storyTitle,
         storyBody,
-        image: form.image || mergedMedia.find(item => item.type === 'image')?.src || '',
-        gallery: mergedMedia.filter(item => item.type === 'image').map(item => item.src),
-        media: mergedMedia,
+        image: media.find(item => item.type === 'image')?.src || '',
+        gallery: media.filter(item => item.type === 'image').map(item => item.src),
+        media,
       },
     };
   }
@@ -1661,6 +1778,24 @@ export default function Admin() {
     }
   };
 
+  const deleteAdminMedia = async url => {
+    const confirmed = window.confirm(
+      'Delete this file permanently from GitHub? This cannot be undone, and any other entry using the same file will stop displaying it.',
+    );
+    if (!confirmed) return false;
+
+    setNotice('Deleting file permanently from GitHub...');
+
+    try {
+      await deleteMediaFromGitHub(url);
+      setNotice('File deleted from GitHub and removed from this form. Save or update the entry to finish.');
+      return true;
+    } catch (err) {
+      setNotice(err.message);
+      return false;
+    }
+  };
+
   const save = async () => {
     try {
       const { payload, payloads, error } = buildPayload(active, form);
@@ -1751,7 +1886,15 @@ export default function Admin() {
               <PhotoCommentsManager comments={photoComments} onRefresh={refreshPhotoComments} onNotice={setNotice} />
             ) : (
               <>
-                <AdminForm active={active} form={form} setForm={setForm} onSave={save} isEditing={Boolean(editingId)} uploadPhoto={uploadAdminPhoto} />
+                <AdminForm
+                  active={active}
+                  form={form}
+                  setForm={setForm}
+                  onSave={save}
+                  isEditing={Boolean(editingId)}
+                  uploadPhoto={uploadAdminPhoto}
+                  deleteMedia={deleteAdminMedia}
+                />
                 {active !== 'page-titles' && (
                   <EntryList
                     active={active}

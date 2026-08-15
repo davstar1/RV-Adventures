@@ -1,6 +1,6 @@
 create table if not exists public.content_entries (
   id uuid primary key default gen_random_uuid(),
-  type text not null check (type in ('story', 'video', 'destination', 'gear', 'community', 'about', 'slide')),
+  type text not null check (type in ('story', 'video', 'destination', 'gear', 'community', 'about', 'slide', 'page-titles')),
   payload jsonb not null,
   created_at timestamptz not null default now(),
   created_by uuid references auth.users(id) default auth.uid()
@@ -11,7 +11,7 @@ drop constraint if exists content_entries_type_check;
 
 alter table public.content_entries
 add constraint content_entries_type_check
-check (type in ('story', 'video', 'destination', 'gear', 'community', 'about', 'slide'));
+check (type in ('story', 'video', 'destination', 'gear', 'community', 'about', 'slide', 'page-titles'));
 
 alter table public.content_entries enable row level security;
 

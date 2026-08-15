@@ -246,6 +246,36 @@ export async function uploadPhotoToGitHub(file, folder = 'uploads') {
   return body;
 }
 
+export async function deleteMediaFromGitHub(url) {
+  if (!isSupabaseConfigured) {
+    throw new Error('Supabase is not configured.');
+  }
+
+  const session = await refreshAdminSession(readSession());
+  if (!session?.access_token) {
+    throw new Error('Please sign in before deleting files.');
+  }
+
+  const response = await fetch(`${SUPABASE_URL}/functions/v1/delete-github-media`, {
+    method: 'POST',
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${session.access_token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ url }),
+  });
+
+  const text = await response.text();
+  const body = text ? JSON.parse(text) : null;
+
+  if (!response.ok) {
+    throw new Error(body?.error || body?.message || 'File deletion failed.');
+  }
+
+  return body;
+}
+
 export async function subscribeRemoteEmail(email, source = 'website') {
   await publicRequest('/rest/v1/newsletter_subscribers', {
     method: 'POST',

@@ -17,6 +17,7 @@ import {
   RotateCcw,
   Star,
   Trash2,
+  Type,
   Wrench,
 } from 'lucide-react';
 import {
@@ -45,6 +46,7 @@ import { resolveMediaUrl } from './mediaUrls';
 import './Admin.css';
 
 const tabs = [
+  { id: 'page-titles', label: 'Page Titles', icon: Type, store: 'pageTitles' },
   { id: 'stories', label: 'Reviews & Guides', icon: PenLine, store: 'posts' },
   { id: 'slides', label: 'Home Slideshow', icon: Camera, store: 'slides' },
   { id: 'about', label: 'About Us', icon: UserRound, store: 'about' },
@@ -75,7 +77,19 @@ const storyFormDefaults = {
   readTime: '',
 };
 
+const pageTitleDefaults = {
+  homeTitleLine1: 'Let curiosity lead the way,',
+  homeTitleLine2: 'and exploration carry us toward the adventures that await.',
+  aboutTitle: 'About Us',
+  destinationsTitle: 'Places We’ve Explored',
+  reviewsTitle: 'Reviews & Guides',
+  videosTitle: 'Learn with us',
+  gearTitle: 'Gear We Actually Use',
+  communityTitle: 'Notes from visitors and the road',
+};
+
 const emptyForms = {
+  'page-titles': pageTitleDefaults,
   stories: storyFormDefaults,
   reviews: { ...storyFormDefaults, category: 'Reviews' },
   tips: { ...storyFormDefaults, category: 'Tips & Tricks' },
@@ -717,6 +731,38 @@ function AdminForm({ active, form, setForm, onSave, isEditing, uploadPhoto }) {
   const fixedPostCategory = activeTabFor(active).category;
   const uploadFolder = photoFolderForActive(active, form);
 
+  if (active === 'page-titles') {
+    return (
+      <div className="admin-form-grid admin-page-titles-form">
+        <Field label="Home title - first line">
+          <input value={form.homeTitleLine1} onChange={e => patch({ homeTitleLine1: e.target.value })} />
+        </Field>
+        <Field label="Home title - second line">
+          <input value={form.homeTitleLine2} onChange={e => patch({ homeTitleLine2: e.target.value })} />
+        </Field>
+        <Field label="About Us title">
+          <input value={form.aboutTitle} onChange={e => patch({ aboutTitle: e.target.value })} />
+        </Field>
+        <Field label="Destinations title">
+          <input value={form.destinationsTitle} onChange={e => patch({ destinationsTitle: e.target.value })} />
+        </Field>
+        <Field label="Reviews & Guides title">
+          <input value={form.reviewsTitle} onChange={e => patch({ reviewsTitle: e.target.value })} />
+        </Field>
+        <Field label="Videos title">
+          <input value={form.videosTitle} onChange={e => patch({ videosTitle: e.target.value })} />
+        </Field>
+        <Field label="Gear title">
+          <input value={form.gearTitle} onChange={e => patch({ gearTitle: e.target.value })} />
+        </Field>
+        <Field label="Community title">
+          <input value={form.communityTitle} onChange={e => patch({ communityTitle: e.target.value })} />
+        </Field>
+        <button className="admin-save" onClick={onSave}><Type size={16} /> Save Page Titles</button>
+      </div>
+    );
+  }
+
   if (isPostTab(active)) {
     const postLabel = fixedPostCategory || 'Story';
 
@@ -984,6 +1030,12 @@ function cleanUrlList(values) {
 }
 
 function formFromEntry(active, entry) {
+  if (active === 'page-titles') {
+    return Object.fromEntries(
+      Object.entries(pageTitleDefaults).map(([key, fallback]) => [key, entry[key] || fallback]),
+    );
+  }
+
   if (isPostTab(active)) {
     const mainImage = String(entry.image || '').trim();
     const additionalPhotos = Array.isArray(entry.gallery)
@@ -1075,6 +1127,17 @@ function formFromEntry(active, entry) {
 }
 
 function buildPayload(active, form) {
+  if (active === 'page-titles') {
+    return {
+      payload: {
+        title: 'Page titles',
+        ...Object.fromEntries(
+          Object.entries(pageTitleDefaults).map(([key, fallback]) => [key, String(form[key] || '').trim() || fallback]),
+        ),
+      },
+    };
+  }
+
   if (isPostTab(active)) {
     if (!form.title || !form.excerpt) return { error: 'Add a title and excerpt first.' };
     const gallery = Array.from(new Set(
@@ -1514,10 +1577,27 @@ export default function Admin() {
   const form = forms[active];
   const activeTab = activeTabFor(active);
   const activeEntries = entriesForTab(content.stored, activeTab);
+  const pageTitleEntry = active === 'page-titles' ? activeEntries[0] : null;
   const setForm = update => setForms(current => ({
     ...current,
     [active]: typeof update === 'function' ? update(current[active]) : update,
   }));
+
+  useEffect(() => {
+    if (active !== 'page-titles') return;
+
+    const timer = window.setTimeout(() => {
+      setEditingId(pageTitleEntry?.id || null);
+      setForms(current => ({
+        ...current,
+        'page-titles': pageTitleEntry
+          ? formFromEntry('page-titles', pageTitleEntry)
+          : { ...pageTitleDefaults },
+      }));
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [active, pageTitleEntry]);
 
   const removeEntry = async id => {
     const confirmed = window.confirm('Delete this entry from the site?');
@@ -1585,12 +1665,18 @@ export default function Admin() {
     try {
       const { payload, payloads, error } = buildPayload(active, form);
       if (error) return setNotice(error);
+      const entryIdToUpdate = editingId || (active === 'page-titles' ? activeEntries[0]?.id : null);
 
-      if (editingId) {
-        await updateContentItem(activeTab.store, editingId, payload || payloads[0]);
+      if (entryIdToUpdate) {
+        await updateContentItem(activeTab.store, entryIdToUpdate, payload || payloads[0]);
       } else {
         const entriesToAdd = payloads || [payload];
         await Promise.all(entriesToAdd.map(entry => addContentItem(activeTab.store, entry)));
+      }
+
+      if (active === 'page-titles') {
+        setNotice('Page titles saved. The public site headings are updated.');
+        return;
       }
 
       setForms(current => ({ ...current, [active]: emptyForms[active] }));
@@ -1656,7 +1742,7 @@ export default function Admin() {
             <div className="admin-panel-head">
               <h2>{tabs.find(tab => tab.id === active)?.label}</h2>
             <div className="admin-panel-status">
-              {editingId && <button className="admin-cancel-edit" onClick={cancelEdit}>Cancel Edit</button>}
+              {editingId && active !== 'page-titles' && <button className="admin-cancel-edit" onClick={cancelEdit}>Cancel Edit</button>}
               {uploadingPhoto && <span className="admin-notice">Uploading photo...</span>}
               {notice && <span className="admin-notice">{notice}</span>}
             </div>
@@ -1666,13 +1752,15 @@ export default function Admin() {
             ) : (
               <>
                 <AdminForm active={active} form={form} setForm={setForm} onSave={save} isEditing={Boolean(editingId)} uploadPhoto={uploadAdminPhoto} />
-                <EntryList
-                  active={active}
-                  entries={activeEntries}
-                  onEdit={editEntry}
-                  onDelete={removeEntry}
-                  onReorder={reorderEntries}
-                />
+                {active !== 'page-titles' && (
+                  <EntryList
+                    active={active}
+                    entries={activeEntries}
+                    onEdit={editEntry}
+                    onDelete={removeEntry}
+                    onReorder={reorderEntries}
+                  />
+                )}
               </>
             )}
           </section>

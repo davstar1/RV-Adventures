@@ -79,7 +79,8 @@ function escapeRegExp(value) {
 }
 
 export default function OwnerIntro() {
-  const { about } = useContent();
+  const { about, pageTitles } = useContent();
+  const aboutTitle = pageTitles[0]?.aboutTitle || 'About Us';
   const profile = about[0];
   const media = useMemo(() => mediaFromProfile(profile), [profile]);
   const storyBody = profile?.storyBody?.trim();
@@ -137,7 +138,7 @@ export default function OwnerIntro() {
     <section id="about" className="owner-section">
       <div className="section-wrap owner-wrap">
         <div className="owner-copy">
-          <span className="eyebrow">About Us</span>
+          <span className="eyebrow">{aboutTitle}</span>
           <p>
             {aboutParts.map((part, partIndex) => (
               storyLinkPhrases.some(phrase => part.toLowerCase() === phrase.toLowerCase()) ? (

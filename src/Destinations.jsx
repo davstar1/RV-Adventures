@@ -26,7 +26,8 @@ function DestinationMedia({ item, name }) {
 }
 
 export default function Destinations() {
-  const { destinations } = useContent();
+  const { destinations, pageTitles } = useContent();
+  const destinationsTitle = pageTitles[0]?.destinationsTitle || 'Places We’ve Explored';
   const [openDestination, setOpenDestination] = useState(null);
   const [photoIndex, setPhotoIndex] = useState(0);
   const media = useMemo(() => {
@@ -78,7 +79,7 @@ export default function Destinations() {
         <div className="dest-hd">
           <div>
             <span className="eyebrow">Where the Road Takes Us</span>
-            <h2 className="dest-heading">Places We’ve Explored</h2>
+            <h2 className="dest-heading">{destinationsTitle}</h2>
           </div>
           <a href="#all-destinations" className="dest-see-all">
             All destinations <ArrowRight size={15} />

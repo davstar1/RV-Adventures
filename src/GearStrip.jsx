@@ -11,7 +11,8 @@ function productLink(value) {
 }
 
 export default function GearStrip() {
-  const { gear } = useContent();
+  const { gear, pageTitles } = useContent();
+  const gearTitle = pageTitles[0]?.gearTitle || 'Gear We Actually Use';
   const allGear = gear;
 
   return (
@@ -20,7 +21,7 @@ export default function GearStrip() {
         <div className="gear-hd">
           <div>
             <span className="eyebrow">Affiliate — We Earn a Commission</span>
-            <h2 className="gear-heading">Gear We Actually Use</h2>
+            <h2 className="gear-heading">{gearTitle}</h2>
             <p className="gear-sub">Everything we recommend we've personally tested on the road — no exceptions.</p>
           </div>
           <a href="#all-gear" className="gear-see-all">All gear picks <ArrowRight size={15} /></a>

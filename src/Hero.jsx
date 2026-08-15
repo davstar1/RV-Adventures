@@ -57,7 +57,10 @@ function trackNameFromUrl(value) {
 }
 
 export default function Hero() {
-  const { slides } = useContent();
+  const { slides, pageTitles } = useContent();
+  const titleSettings = pageTitles[0] || {};
+  const homeTitleLine1 = titleSettings.homeTitleLine1 || 'Let curiosity lead the way,';
+  const homeTitleLine2 = titleSettings.homeTitleLine2 || 'and exploration carry us toward the adventures that await.';
   const orderedSlides = useMemo(() => {
     const hasCustomOrder = slides.some(slide => Number.isFinite(Number(slide.sortOrder)));
     if (!hasCustomOrder) return slides;
@@ -200,12 +203,12 @@ export default function Hero() {
 
           <h1 className="hero-title">
             <span className="hero-title-glow" aria-hidden="true">
-              <span>Let curiosity lead the way,</span>
-              <em>and exploration carry us toward the adventures that await.</em>
+              <span>{homeTitleLine1}</span>
+              <em>{homeTitleLine2}</em>
             </span>
             <span className="hero-title-copy">
-              <span>Let curiosity lead the way,</span>
-              <em>and exploration carry us toward the adventures that await.</em>
+              <span>{homeTitleLine1}</span>
+              <em>{homeTitleLine2}</em>
             </span>
           </h1>
 

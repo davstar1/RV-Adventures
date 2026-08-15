@@ -108,7 +108,8 @@ export default function Blog() {
   const [active, setActive] = useState('All');
   const [openPost, setOpenPost] = useState(null);
   const [photoIndex, setPhotoIndex] = useState(0);
-  const { posts, gear } = useContent();
+  const { posts, gear, pageTitles } = useContent();
+  const reviewsTitle = pageTitles[0]?.reviewsTitle || 'Reviews & Guides';
   const filtered = active === 'All' ? posts : posts.filter(p => p.category === active);
   const openMedia = openPost ? [
     ...Array.from(new Set([
@@ -153,7 +154,7 @@ export default function Blog() {
 
         <header className="blog-header">
           <span className="eyebrow">Fresh from the Road</span>
-          <h2 className="blog-heading">Reviews & Guides</h2>
+          <h2 className="blog-heading">{reviewsTitle}</h2>
           <div className="filter-row">
             {categories.filter(c => c !== 'Destinations').map(c => (
               <button

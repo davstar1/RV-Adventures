@@ -4,7 +4,8 @@ import { addContentItem, useContent } from './contentStore';
 import './Community.css';
 
 export default function Community() {
-  const { comments } = useContent();
+  const { comments, pageTitles } = useContent();
+  const communityTitle = pageTitles[0]?.communityTitle || 'Notes from visitors and the road';
   const [name, setName] = useState('');
   const [text, setText] = useState('');
   const [status, setStatus] = useState('');
@@ -34,7 +35,7 @@ export default function Community() {
       <div className="section-wrap community-wrap">
         <div className="community-copy">
           <span className="eyebrow">Community Notes</span>
-          <h2 className="community-heading">Notes from visitors and the road</h2>
+          <h2 className="community-heading">{communityTitle}</h2>
           <p className="community-lead">
             Share a campground tip, ask a route question, or leave a note about something you want me to cover next.
           </p>

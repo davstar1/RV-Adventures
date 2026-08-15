@@ -6,7 +6,8 @@ import { resolveMediaUrl } from './mediaUrls';
 import './Videos.css';
 
 export default function Videos() {
-  const { videos } = useContent();
+  const { videos, pageTitles } = useContent();
+  const videosTitle = pageTitles[0]?.videosTitle || 'Learn with us';
   const [openVideo, setOpenVideo] = useState(null);
   const featuredVideo = videos[0];
   const featuredYoutubeId = featuredVideo?.youtubeId || youtubeIdFromUrl(featuredVideo?.youtubeUrl || '');
@@ -22,7 +23,7 @@ export default function Videos() {
     <section id="videos" className="vid-section">
       <div className="section-wrap">
         <span className="eyebrow">On the Channel</span>
-        <h2 className="vid-heading">Learn with us</h2>
+        <h2 className="vid-heading">{videosTitle}</h2>
         <p className="vid-sub">
           Full RV tours, build walkthroughs, destination vlogs — everything we film on the road.
         </p>

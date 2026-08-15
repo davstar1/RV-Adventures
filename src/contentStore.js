@@ -18,6 +18,7 @@ const emptyContent = {
   comments: [],
   about: [],
   slides: [],
+  pageTitles: [],
 };
 
 const typeMap = {
@@ -28,6 +29,7 @@ const typeMap = {
   comments: 'community',
   about: 'about',
   slides: 'slide',
+  pageTitles: 'page-titles',
 };
 
 let remoteContentCache = null;
@@ -62,6 +64,7 @@ export function getContent() {
     comments: orderedStored.comments,
     about: orderedStored.about,
     slides: orderedStored.slides,
+    pageTitles: orderedStored.pageTitles,
     stored: orderedStored,
     remoteReady: false,
     storageMode: 'local',
@@ -77,6 +80,7 @@ function contentFromRows(rows) {
     comments: rows.filter(row => row.remoteType === typeMap.comments),
     about: rows.filter(row => row.remoteType === typeMap.about),
     slides: sortOrderedEntries(rows.filter(row => row.remoteType === typeMap.slides)),
+    pageTitles: rows.filter(row => row.remoteType === typeMap.pageTitles),
   };
 
   return {
@@ -87,6 +91,7 @@ function contentFromRows(rows) {
     comments: remote.comments,
     about: remote.about,
     slides: remote.slides,
+    pageTitles: remote.pageTitles,
     stored: remote,
     remoteReady: true,
     storageMode: 'supabase',

@@ -330,6 +330,36 @@
   display: none;
 }
 
+.admin-photo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 10px;
+}
+
+.admin-photo-remove {
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1.5px solid rgba(224,92,92,.34);
+  border-radius: var(--r-sm);
+  padding: 0 16px;
+  color: #ffd0d0;
+  background: rgba(224,92,92,.14);
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.admin-photo-remove:hover,
+.admin-photo-remove:focus-visible {
+  border-color: rgba(255,125,125,.72);
+  background: rgba(224,92,92,.24);
+  outline: none;
+}
+
 .admin-audio-field {
   display: grid;
   grid-template-columns: 1fr;

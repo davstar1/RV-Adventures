@@ -275,7 +275,7 @@ function photoFolderForActive(active, form = {}) {
   return 'uploads';
 }
 
-function PhotoField({ label, value, onChange, uploadPhoto, folder, onAdditionalPhotos }) {
+function PhotoField({ label, value, onChange, uploadPhoto, folder, onAdditionalPhotos, onRemove }) {
   return (
     <div className="admin-photo-field admin-audio-field">
       <Field label={label}>
@@ -286,26 +286,33 @@ function PhotoField({ label, value, onChange, uploadPhoto, folder, onAdditionalP
           onChange={e => onChange(e.target.value)}
         />
       </Field>
-      <label className="admin-upload">
-        <Camera size={16} />
-        Upload Photo(s)
-        <input
-          type="file"
-          accept="image/*"
-          multiple
-          onChange={async e => {
-            const files = Array.from(e.target.files || []);
-            if (files.length) {
-              const uploaded = await Promise.all(files.map(file => uploadOrReadPhoto(file, uploadPhoto, folder)));
-              onChange(uploaded[0]);
-              if (uploaded.length > 1 && onAdditionalPhotos) {
-                onAdditionalPhotos(uploaded.slice(1));
+      <div className="admin-photo-actions">
+        <label className="admin-upload">
+          <Camera size={16} />
+          Upload Photo(s)
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={async e => {
+              const files = Array.from(e.target.files || []);
+              if (files.length) {
+                const uploaded = await Promise.all(files.map(file => uploadOrReadPhoto(file, uploadPhoto, folder)));
+                onChange(uploaded[0]);
+                if (uploaded.length > 1 && onAdditionalPhotos) {
+                  onAdditionalPhotos(uploaded.slice(1));
+                }
               }
-            }
-            e.target.value = '';
-          }}
-        />
-      </label>
+              e.target.value = '';
+            }}
+          />
+        </label>
+        {value && onRemove && (
+          <button type="button" className="admin-photo-remove" onClick={onRemove}>
+            <Trash2 size={16} /> Remove main photo
+          </button>
+        )}
+      </div>
     </div>
   );
 }
@@ -854,6 +861,13 @@ function AdminForm({ active, form, setForm, onSave, isEditing, uploadPhoto }) {
           label="Destination photo"
           value={form.image}
           onChange={image => patch({ image })}
+          onRemove={() => {
+            const mainPhoto = String(form.image || '').trim();
+            patch({
+              image: '',
+              gallery: (form.gallery || []).filter(photo => String(photo || '').trim() !== mainPhoto),
+            });
+          }}
           uploadPhoto={uploadPhoto}
           folder={uploadFolder}
           onAdditionalPhotos={photos => patch({ gallery: [...(form.gallery || []), ...photos] })}

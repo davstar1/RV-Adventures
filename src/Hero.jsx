@@ -349,8 +349,6 @@ export default function Hero() {
                   <PhotoComments
                     photoId="home-slideshow"
                     title="Comments"
-                    collapsible
-                    defaultOpen
                   />
                 </div>
               )}

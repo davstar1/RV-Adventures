@@ -16,8 +16,8 @@ function formatCommentDate(value) {
 export default function PhotoComments({
   photoId,
   title = 'Comments',
-  collapsible = false,
-  defaultOpen = true,
+  collapsible = true,
+  defaultOpen = false,
   onOpenChange,
 }) {
   const [comments, setComments] = useState([]);
@@ -105,7 +105,7 @@ export default function PhotoComments({
         <div
           className="photo-comments-body"
           aria-hidden={collapsible && !isOpen}
-          inert={collapsible && !isOpen ? '' : undefined}
+          inert={collapsible && !isOpen ? true : undefined}
         >
           {!isSupabaseConfigured ? (
             <p className="photo-comments-status">Comments need Supabase connected before they can be saved.</p>

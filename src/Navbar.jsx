@@ -4,7 +4,7 @@ import './Navbar.css';
 
 const NAV = [
   { label: 'Home',         href: '#home' },
-  { label: 'About Us',     href: '#about' },
+  { label: 'Adventures',   href: '#adventures' },
   { label: 'Destinations', href: '#destinations' },
   { label: 'Reviews & Guides', href: '#blog' },
   { label: 'Videos',       href: '#videos' },
@@ -46,7 +46,7 @@ export default function Navbar() {
           ))}
           <li>
             <a href="#newsletter" className="nav-cta" onClick={() => setOpen(false)}>
-              Subscribe Free
+              Follow
             </a>
           </li>
         </ul>

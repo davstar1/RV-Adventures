@@ -69,8 +69,22 @@
 }
 
 .admin-auth-card--login {
-  margin-top: 90px;
+  width: 100%;
+  max-width: none;
+  margin: 0;
   gap: 16px;
+}
+
+.admin-auth-login-shell {
+  width: min(100%, 560px);
+  display: grid;
+  gap: 12px;
+  margin: 46px auto 0;
+}
+
+.admin-auth-login-shell > .admin-back {
+  width: 100%;
+  min-height: 44px;
 }
 
 .admin-auth-card--login > .eyebrow {

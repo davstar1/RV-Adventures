@@ -63,7 +63,8 @@ function AboutTile({ item, title, index, onOpen }) {
         <img
           src={resolveMediaUrl(item.src)}
           alt={item.description || title || 'Open Road RV Adventures'}
-          loading="lazy"
+          loading={index < 4 ? 'eager' : 'lazy'}
+          fetchPriority={index === 0 ? 'high' : 'auto'}
           decoding="async"
         />
       )}
@@ -135,7 +136,7 @@ export default function OwnerIntro() {
   }, [modalOpen, media.length]);
 
   return (
-    <section id="about" className="owner-section">
+    <section id="home" className="owner-section">
       <div className="section-wrap owner-wrap">
         <div className="owner-copy">
           <span className="eyebrow">{aboutTitle}</span>

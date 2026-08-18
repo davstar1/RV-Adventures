@@ -168,7 +168,7 @@ export default function Hero() {
   }, [currentSong, playlistStarted]);
 
   return (
-    <section id="home" className="hero">
+    <section id="adventures" className="hero">
       <div className="hero-scene" aria-hidden="true">
         <div className="hero-road hero-road-one" />
         <div className="hero-road hero-road-two" />
@@ -222,7 +222,7 @@ export default function Hero() {
             <a href="#destinations" className="btn-primary">
               Start Exploring <ArrowRight size={17} />
             </a>
-            <a href="#about" className="btn-ghost">Meet Us</a>
+            <a href="#home" className="btn-ghost">About Us</a>
           </div>
 
           <div className="hero-trust">

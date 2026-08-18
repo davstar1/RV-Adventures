@@ -198,7 +198,7 @@ export default function Blog() {
               <NewsletterForm
                 className="sb-newsletter-form"
                 inputClassName="sb-email"
-                buttonText="Subscribe Free"
+                buttonText="Keep in Touch"
                 source="blog-sidebar"
               />
               <span className="sb-legal">No spam. Cancel anytime.</span>

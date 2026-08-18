@@ -849,13 +849,13 @@ function AdminForm({ active, form, setForm, onSave, isEditing, uploadPhoto, dele
   if (active === 'page-titles') {
     return (
       <div className="admin-form-grid admin-page-titles-form">
-        <Field label="Home title - first line">
+        <Field label="Adventures title - first line">
           <input value={form.homeTitleLine1} onChange={e => patch({ homeTitleLine1: e.target.value })} />
         </Field>
-        <Field label="Home title - second line">
+        <Field label="Adventures title - second line">
           <input value={form.homeTitleLine2} onChange={e => patch({ homeTitleLine2: e.target.value })} />
         </Field>
-        <Field label="About Us title">
+        <Field label="Home/About Us title">
           <input value={form.aboutTitle} onChange={e => patch({ aboutTitle: e.target.value })} />
         </Field>
         <Field label="Destinations title">
@@ -1631,21 +1631,23 @@ function AdminSignIn({ onSignedIn }) {
   return (
     <main id="admin" className="admin-page">
       <div className="section-wrap admin-wrap">
-        <form className="admin-auth-card admin-auth-card--login" onSubmit={submit}>
-          <span className="eyebrow">Admin Login</span>
-          <Field label="Email">
-            <input type="email" value={email} onChange={e => setEmail(e.target.value)} autoComplete="username" required />
-          </Field>
-          <Field label="Password">
-            <input type="password" value={password} onChange={e => setPassword(e.target.value)} autoComplete="current-password" required />
-          </Field>
-          {error && <span className="admin-error">{error}</span>}
-          <button className="admin-save" type="submit" disabled={loading}>
-            <Lock size={16} /> {loading ? 'Signing in...' : 'Sign In'}
-          </button>
-        </form>
+        <div className="admin-auth-login-shell">
+          <BackToSiteButton />
+          <form className="admin-auth-card admin-auth-card--login" onSubmit={submit}>
+            <span className="eyebrow">Admin Login</span>
+            <Field label="Email">
+              <input type="email" value={email} onChange={e => setEmail(e.target.value)} autoComplete="username" required />
+            </Field>
+            <Field label="Password">
+              <input type="password" value={password} onChange={e => setPassword(e.target.value)} autoComplete="current-password" required />
+            </Field>
+            {error && <span className="admin-error">{error}</span>}
+            <button className="admin-save" type="submit" disabled={loading}>
+              <Lock size={16} /> {loading ? 'Signing in...' : 'Sign In'}
+            </button>
+          </form>
+        </div>
       </div>
-      <BackToSiteButton floating />
     </main>
   );
 }

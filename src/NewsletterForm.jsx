@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { subscribeEmail } from './newsletterStore';
 
-export default function NewsletterForm({ className = '', inputClassName = '', buttonText = 'Subscribe', source = 'website' }) {
+export default function NewsletterForm({ className = '', inputClassName = '', buttonText = 'Keep in Touch', source = 'website' }) {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState('');
   const [statusType, setStatusType] = useState('');
@@ -43,7 +43,7 @@ export default function NewsletterForm({ className = '', inputClassName = '', bu
         autoComplete="email"
       />
       <button className="btn-primary" type="submit" disabled={loading}>
-        {loading ? 'Subscribing...' : buttonText}
+        {loading ? 'Saving...' : buttonText}
       </button>
       {status && <span className={`newsletter-status newsletter-status--${statusType}`} aria-live="polite">{status}</span>}
     </form>

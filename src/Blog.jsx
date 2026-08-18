@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Heart, MessageCircle, Clock, Star, ExternalLink, ArrowLeft, ArrowRight, X } from 'lucide-react';
+import { Heart, MessageCircle, Clock, ArrowLeft, ArrowRight, X } from 'lucide-react';
 import { categories } from './data';
 import { useContent, youtubeIdFromUrl } from './contentStore';
 import { resolveMediaUrl } from './mediaUrls';
@@ -65,25 +65,6 @@ function PostCard({ post, big = false, onOpen }) {
   );
 }
 
-/* ── Affiliate Card ── */
-function AffCard({ p }) {
-  return (
-    <a href={p.link} className="aff-card" target="_blank" rel="noopener noreferrer sponsored">
-      <span className="aff-badge">{p.badge}</span>
-      <div className="aff-emoji">{p.emoji}</div>
-      <div className="aff-info">
-        <span className="aff-cat">{p.category}</span>
-        <span className="aff-name">{p.name}</span>
-        <span className="aff-desc">{p.desc}</span>
-        <div className="aff-bottom">
-          <span className="aff-rating"><Star size={12} fill="currentColor" />{p.rating} <em>({p.reviews.toLocaleString()})</em></span>
-          <span className="aff-buy">{p.price} <ExternalLink size={11} /></span>
-        </div>
-      </div>
-    </a>
-  );
-}
-
 function StoryMedia({ item, title }) {
   if (!item) return <div className="card-img-empty">No media</div>;
   if (item.type === 'image') return <img src={resolveMediaUrl(item.src)} alt={title} loading="lazy" decoding="async" />;
@@ -106,9 +87,10 @@ function StoryMedia({ item, title }) {
 /* ── Main Blog Section ── */
 export default function Blog() {
   const [active, setActive] = useState('All');
+  const [visibleCount, setVisibleCount] = useState(7);
   const [openPost, setOpenPost] = useState(null);
   const [photoIndex, setPhotoIndex] = useState(0);
-  const { posts, gear, pageTitles } = useContent();
+  const { posts, pageTitles } = useContent();
   const reviewsTitle = pageTitles[0]?.reviewsTitle || 'Reviews & Guides';
   const filtered = active === 'All' ? posts : posts.filter(p => p.category === active);
   const openMedia = openPost ? [
@@ -160,7 +142,10 @@ export default function Blog() {
               <button
                 key={c}
                 className={`filter-pill ${active === c ? 'filter-pill--on' : ''}`}
-                onClick={() => setActive(c)}
+                onClick={() => {
+                  setActive(c);
+                  setVisibleCount(7);
+                }}
               >
                 {c}
               </button>
@@ -174,16 +159,18 @@ export default function Blog() {
             {filtered[0] && <PostCard post={filtered[0]} big onOpen={openStory} />}
 
             <div className="cards-grid">
-              {filtered.slice(1).map(p => <PostCard key={p.id} post={p} onOpen={openStory} />)}
+              {filtered.slice(1, visibleCount).map(p => <PostCard key={p.id} post={p} onOpen={openStory} />)}
             </div>
 
             {filtered.length === 0 && (
               <p className="blog-empty">Add your first story, review, or guide from the admin page.</p>
             )}
 
-            {filtered.length > 6 && (
-              <div style={{textAlign:'center', marginTop:48}}>
-                <button className="load-more">Load More Stories <ArrowRight size={15} /></button>
+            {filtered.length > visibleCount && (
+              <div className="load-more-wrap">
+                <button className="load-more" onClick={() => setVisibleCount(count => count + 6)}>
+                  Load More Stories <ArrowRight size={15} />
+                </button>
               </div>
             )}
           </main>
@@ -191,7 +178,7 @@ export default function Blog() {
           {/* ── Sidebar ── */}
           <aside className="blog-sidebar">
             {/* Newsletter */}
-            <div className="sb-widget sb-newsletter" id="newsletter">
+            <div className="sb-widget sb-newsletter">
               <span className="eyebrow">Free Newsletter</span>
               <h3>Best Routes, Weekly</h3>
               <p>Campground finds, gear deals, and road trip inspo straight to your inbox.</p>
@@ -204,16 +191,6 @@ export default function Blog() {
               <span className="sb-legal">No spam. Cancel anytime.</span>
             </div>
 
-            {/* Gear picks */}
-            <div className="sb-widget">
-              <div className="sb-widget-hd">
-                <h3>Gear We Actually Use</h3>
-                <span className="sb-disclosure">Affiliate</span>
-              </div>
-              {gear.length > 0 ? gear.map(p => <AffCard key={p.id} p={p} />) : (
-                <p className="sb-empty">Add gear reviews in Admin to show your own picks here.</p>
-              )}
-            </div>
           </aside>
         </div>
       </div>

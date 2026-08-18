@@ -1,27 +1,39 @@
-import { Compass, Play, Camera, Users, MessageCircle } from 'lucide-react';
+import { Compass } from 'lucide-react';
 import NewsletterForm from './NewsletterForm';
 import './Footer.css';
 
 const links = {
-  Explore:   ['Destinations','Campground Reviews','Trip Planners','State Parks'],
-  Content:   ['Latest Stories','Gear Reviews','Beginner Guides','Full-Time RV'],
-  Connect:   ['Newsletter','Community Forum','Submit a Story','Advertise With Us'],
-  Legal:     ['Privacy Policy','Affiliate Disclosure','Terms of Use','Contact'],
+  Explore: [
+    { label: 'Adventures', href: '#adventures' },
+    { label: 'Destinations', href: '#destinations' },
+    { label: 'Videos', href: '#videos' },
+  ],
+  Read: [
+    { label: 'Reviews & Guides', href: '#blog' },
+    { label: 'Favorite Campgrounds', href: '#blog' },
+    { label: 'Gear We Use', href: '#gear' },
+  ],
+  Connect: [
+    { label: 'Keep in Touch', href: '#newsletter' },
+    { label: 'Community Notes', href: '#community' },
+    { label: 'Site Manager', href: '#admin' },
+  ],
 };
 
 export default function Footer() {
   return (
     <footer className="footer">
       {/* Newsletter strip */}
-      <div className="footer-nl">
+      <div className="footer-nl" id="newsletter">
         <div className="section-wrap footer-nl-inner">
           <div>
             <h3>Don't Miss a Single Adventure</h3>
-            <p>Weekly road reports, campground finds, and gear deals — free.</p>
+            <p>New road stories, campground finds, and honest gear notes from us.</p>
           </div>
           <NewsletterForm
             className="footer-nl-form"
             inputClassName="footer-email"
+            buttonText="Keep in Touch"
             source="footer"
           />
         </div>
@@ -37,23 +49,17 @@ export default function Footer() {
             </div>
           </div>
           <p className="footer-tagline">
-            Real stories from the road. We live full-time in our RV and
-            share everything we learn — the beautiful parts and the hard parts.
+            Real stories from the road. We share the destinations, lessons,
+            gear, and everyday moments that shape our RV adventures.
           </p>
-          <div className="footer-socials">
-            <a href="#youtube"   aria-label="YouTube"><Play size={18} /></a>
-            <a href="#instagram" aria-label="Instagram"><Camera size={18} /></a>
-            <a href="#facebook"  aria-label="Facebook"><Users size={18} /></a>
-            <a href="#twitter"   aria-label="Twitter"><MessageCircle size={18} /></a>
-          </div>
         </div>
 
         {Object.entries(links).map(([col, items]) => (
           <div key={col} className="footer-col">
             <h4 className="footer-col-title">{col}</h4>
             <ul>
-              {items.map(l => (
-                <li key={l}><a href={`#${l.toLowerCase().replace(/\s+/g,'-')}`}>{l}</a></li>
+              {items.map(item => (
+                <li key={item.label}><a href={item.href}>{item.label}</a></li>
               ))}
             </ul>
           </div>
@@ -62,7 +68,7 @@ export default function Footer() {
 
       <div className="footer-bottom">
         <div className="section-wrap footer-bottom-inner">
-          <span>© 2025 Open Road RV Adventures. All rights reserved.</span>
+          <span>© {new Date().getFullYear()} Open Road RV Adventures. All rights reserved.</span>
           <span className="footer-disclosure">
             This site contains affiliate links. We may earn a commission at no extra cost to you.
           </span>

@@ -80,10 +80,8 @@ export default function Destinations() {
           <div>
             <span className="eyebrow">Where the Road Takes Us</span>
             <h2 className="dest-heading">{destinationsTitle}</h2>
+            <p className="dest-intro">Campgrounds, towns, trails, and the places we would gladly return to.</p>
           </div>
-          <a href="#all-destinations" className="dest-see-all">
-            All destinations <ArrowRight size={15} />
-          </a>
         </div>
 
         <div className="dest-grid">

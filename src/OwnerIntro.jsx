@@ -47,7 +47,7 @@ function MediaDisplay({ item, title, compact = false }) {
   return <img src={resolveMediaUrl(item.src)} alt={title || 'Open Road RV Adventures'} loading="lazy" decoding="async" />;
 }
 
-function AboutTile({ item, title, index, onOpen }) {
+function AboutTile({ item, title, index, onOpen, remaining = 0 }) {
   const isVideo = item.type === 'video';
 
   return (
@@ -63,7 +63,7 @@ function AboutTile({ item, title, index, onOpen }) {
         <img
           src={resolveMediaUrl(item.src)}
           alt={item.description || title || 'Open Road RV Adventures'}
-          loading={index < 4 ? 'eager' : 'lazy'}
+          loading={index < 2 ? 'eager' : 'lazy'}
           fetchPriority={index === 0 ? 'high' : 'auto'}
           decoding="async"
         />
@@ -71,6 +71,7 @@ function AboutTile({ item, title, index, onOpen }) {
       <span className="owner-collage-overlay">
         {isVideo ? <Play size={22} /> : <Images size={22} />}
       </span>
+      {remaining > 0 && <span className="owner-collage-count">+{remaining} more</span>}
     </button>
   );
 }
@@ -139,48 +140,85 @@ export default function OwnerIntro() {
     <section id="home" className="owner-section">
       <div className="section-wrap owner-wrap">
         <div className="owner-copy">
-          <span className="eyebrow">{aboutTitle}</span>
-          <p>
-            {aboutParts.map((part, partIndex) => (
-              storyLinkPhrases.some(phrase => part.toLowerCase() === phrase.toLowerCase()) ? (
-                <button
-                  key={`${part}-${partIndex}`}
-                  type="button"
-                  className="owner-story-link owner-story-link--inline"
-                  onClick={openStory}
-                >
-                  {part}
-                </button>
-              ) : (
-                <span key={`${part}-${partIndex}`}>{part}</span>
-              )
-            ))}
-          </p>
-          {storyBody && !hasInlineStoryLink && (
-            <button type="button" className="owner-story-link" onClick={openStory}>
-              {storyTitle}
-            </button>
-          )}
+          <header className="owner-copy-header">
+            <span className="eyebrow">Open Road RV Adventures</span>
+            <h1 className="owner-heading">{aboutTitle}</h1>
+          </header>
+
+          <div className="owner-editorial">
+            {media[0] && (
+              <button
+                type="button"
+                className="owner-lead-media"
+                onClick={() => openMedia(0)}
+                aria-label={`Open About ${media[0].type === 'video' ? 'video' : 'photo'}`}
+              >
+                {media[0].type === 'video' ? (
+                  <>
+                    <video src={resolveMediaUrl(media[0].src)} muted playsInline preload="metadata" />
+                    <span className="owner-lead-media-icon"><Play size={24} /></span>
+                  </>
+                ) : (
+                  <img
+                    src={resolveMediaUrl(media[0].src)}
+                    alt={media[0].description || profile?.title || 'Open Road RV Adventures'}
+                    loading="eager"
+                    fetchPriority="high"
+                    decoding="async"
+                  />
+                )}
+              </button>
+            )}
+
+            <p>
+              {aboutParts.map((part, partIndex) => (
+                storyLinkPhrases.some(phrase => part.toLowerCase() === phrase.toLowerCase()) ? (
+                  <button
+                    key={`${part}-${partIndex}`}
+                    type="button"
+                    className="owner-story-link owner-story-link--inline"
+                    onClick={openStory}
+                  >
+                    {part}
+                  </button>
+                ) : (
+                  <span key={`${part}-${partIndex}`}>{part}</span>
+                )
+              ))}
+            </p>
+            {storyBody && !hasInlineStoryLink && (
+              <button type="button" className="owner-story-link" onClick={openStory}>
+                {storyTitle}
+              </button>
+            )}
+            <div className="owner-actions">
+              <a href="#adventures" className="btn-primary">Latest adventures <ArrowRight size={16} /></a>
+              <a href="#destinations" className="owner-explore-link">Places we’ve explored <ArrowRight size={15} /></a>
+            </div>
+          </div>
         </div>
 
-        <div className="owner-collage" aria-label="About us photo and video collage">
-          {media.length > 0 ? (
-            media.map((item, mediaIndex) => (
+        {media.length > 1 && (
+          <div className="owner-collage" aria-label="More About us photos and videos">
+            {media.slice(1, 6).map((item, mediaIndex) => (
               <AboutTile
                 key={`${item.src}-${mediaIndex}`}
                 item={item}
                 title={profile?.title}
-                index={mediaIndex}
+                index={mediaIndex + 1}
                 onOpen={openMedia}
+                remaining={mediaIndex === 4 ? Math.max(0, media.length - 6) : 0}
               />
-            ))
-          ) : (
-            <div className="owner-gallery-empty">
-              <Camera size={34} />
-              <span>Add About photos and videos in Admin</span>
-            </div>
-          )}
-        </div>
+            ))}
+          </div>
+        )}
+
+        {media.length === 0 && (
+          <div className="owner-gallery-empty">
+            <Camera size={34} />
+            <span>Add About photos and videos in Admin</span>
+          </div>
+        )}
       </div>
 
       {storyBody && storyOpen && (

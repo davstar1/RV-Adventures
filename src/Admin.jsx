@@ -137,6 +137,7 @@ const emptyForms = {
     desc: '',
     badge: 'Road Tested',
     link: '',
+    linkLabel: 'View on Amazon',
     videoUrls: [],
     emoji: '★',
   },
@@ -1053,7 +1054,7 @@ function AdminForm({ active, form, setForm, onSave, isEditing, uploadPhoto, dele
   if (active === 'gear') {
     return (
       <div className="admin-form-grid">
-        <Field label="Gear name">
+        <Field label="Article title">
           <input value={form.name} onChange={e => patch({ name: e.target.value })} />
         </Field>
         <Field label="Category">
@@ -1066,23 +1067,25 @@ function AdminForm({ active, form, setForm, onSave, isEditing, uploadPhoto, dele
         <Field label="Rating">
           <input type="number" min="1" max="5" step=".1" value={form.rating} onChange={e => patch({ rating: e.target.value })} />
         </Field>
-        <Field label="Reviews">
-          <input type="number" min="0" value={form.reviews} onChange={e => patch({ reviews: e.target.value })} />
-        </Field>
         <Field label="Badge">
           <input value={form.badge} onChange={e => patch({ badge: e.target.value })} />
         </Field>
-        <Field label="Shop button link">
-          <input value={form.link} placeholder="https://example.com/product" onChange={e => patch({ link: e.target.value })} />
+        <Field label="Amazon product link">
+          <input value={form.link} placeholder="https://www.amazon.com/..." onChange={e => patch({ link: e.target.value })} />
+        </Field>
+        <Field label="Amazon button text">
+          <input value={form.linkLabel} placeholder="View on Amazon" onChange={e => patch({ linkLabel: e.target.value })} />
         </Field>
         <VideoUrlField label="Gear video URLs" value={form.videoUrls} onChange={videoUrls => patch({ videoUrls })} />
-        <Field label="Icon">
-          <input value={form.emoji} maxLength={2} onChange={e => patch({ emoji: e.target.value })} />
+        <Field label="Full road-tested article">
+          <textarea
+            value={form.desc}
+            rows={18}
+            placeholder="Write your complete article here. Leave a blank line between paragraphs. Include how you used the gear, what worked, what did not, and who you recommend it for."
+            onChange={e => patch({ desc: e.target.value })}
+          />
         </Field>
-        <Field label="Review summary">
-          <textarea value={form.desc} rows={4} onChange={e => patch({ desc: e.target.value })} />
-        </Field>
-        <button className="admin-save" onClick={onSave}><Plus size={16} /> {actionLabel('Gear Review')}</button>
+        <button className="admin-save" onClick={onSave}><Plus size={16} /> {actionLabel('Gear Article')}</button>
       </div>
     );
   }
@@ -1235,6 +1238,7 @@ function formFromEntry(active, entry) {
       desc: entry.desc || '',
       badge: entry.badge || 'Road Tested',
       link: entry.link || '',
+      linkLabel: entry.linkLabel || 'View on Amazon',
       videoUrls: cleanUrlList(entry.videoUrls),
       emoji: entry.emoji || '★',
     };
@@ -1372,7 +1376,7 @@ function buildPayload(active, form) {
   }
 
   if (active === 'gear') {
-    if (!form.name || !form.desc) return { error: 'Add a gear name and review summary first.' };
+    if (!form.name || !form.desc) return { error: 'Add an article title and road-tested article first.' };
     return {
       payload: {
         name: form.name,
@@ -1384,6 +1388,7 @@ function buildPayload(active, form) {
         desc: form.desc,
         badge: form.badge || 'Road Tested',
         link: normalizeProductLink(form.link, `#gear-${slugify(form.name)}`),
+        linkLabel: form.linkLabel || 'View on Amazon',
         videoUrls: cleanUrlList(form.videoUrls),
         emoji: form.emoji || '★',
       },

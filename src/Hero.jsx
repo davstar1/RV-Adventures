@@ -198,10 +198,10 @@ export default function Hero() {
       <div className="hero-body section-wrap">
         <div className="hero-content">
           <span className="eyebrow hero-eyebrow">
-            <MapPin size={12} /> Full-time RV life, told from the road
+            <MapPin size={12} /> Adventure Journal
           </span>
 
-          <h1 className="hero-title">
+          <h2 className="hero-title">
             <span className="hero-title-glow" aria-hidden="true">
               <span>{homeTitleLine1}</span>
               <em>{homeTitleLine2}</em>
@@ -210,7 +210,7 @@ export default function Hero() {
               <span>{homeTitleLine1}</span>
               <em>{homeTitleLine2}</em>
             </span>
-          </h1>
+          </h2>
 
           <p className="hero-lead">
             Real destinations, campground notes, RV lessons, videos, photos,
@@ -220,7 +220,7 @@ export default function Hero() {
 
           <div className="hero-actions">
             <a href="#destinations" className="btn-primary">
-              Start Exploring <ArrowRight size={17} />
+              Explore Our Stops <ArrowRight size={17} />
             </a>
             <a href="#home" className="btn-ghost">About Us</a>
           </div>
@@ -243,8 +243,8 @@ export default function Hero() {
                     <img
                       src={resolveMediaUrl(currentSlide.image)}
                       alt={currentSlide.title || 'Open Road adventure'}
-                      loading="eager"
-                      fetchPriority="high"
+                      loading="lazy"
+                      fetchPriority="low"
                       decoding="async"
                     />
                     <PhotoLike id={currentSlide.image} className="photo-like--floating" />

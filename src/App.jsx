@@ -2,6 +2,7 @@ import './index.css'
 import Navbar       from './Navbar'
 import Hero         from './Hero'
 import OwnerIntro   from './OwnerIntro'
+import HomeHighlights from './HomeHighlights'
 import Blog         from './Blog'
 import Destinations from './Destinations'
 import Videos       from './Videos'
@@ -36,6 +37,7 @@ export default function App() {
     <>
       <Navbar />
       <OwnerIntro />
+      <HomeHighlights />
       <Hero />
       {showLowerSections && (
         <>

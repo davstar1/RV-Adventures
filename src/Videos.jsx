@@ -60,24 +60,26 @@ export default function Videos() {
           </div>
         </div>
 
-        <div className="vid-grid">
-          {videos.map(v => (
-            <button key={v.id} className="vid-card" onClick={() => setOpenVideo(v)}>
-              <div className="vid-thumb-wrap">
-                <img src={resolveMediaUrl(v.thumb)} alt={v.title} loading="lazy" decoding="async" />
-                <div className="vid-play-btn"><Play size={20} fill="white" /></div>
-                <span className="vid-duration">{v.duration}</span>
-              </div>
-              <div className="vid-info">
-                <h4 className="vid-title">{v.title}</h4>
-                <div className="vid-meta">
-                  <span>{v.channel}</span>
-                  <span><Eye size={12} /> {v.views} views</span>
+        {videos.length > 1 && (
+          <div className="vid-grid">
+            {videos.slice(1).map(v => (
+              <button key={v.id} className="vid-card" onClick={() => setOpenVideo(v)}>
+                <div className="vid-thumb-wrap">
+                  <img src={resolveMediaUrl(v.thumb)} alt={v.title} loading="lazy" decoding="async" />
+                  <div className="vid-play-btn"><Play size={20} fill="white" /></div>
+                  <span className="vid-duration">{v.duration}</span>
                 </div>
-              </div>
-            </button>
-          ))}
-        </div>
+                <div className="vid-info">
+                  <h4 className="vid-title">{v.title}</h4>
+                  <div className="vid-meta">
+                    <span>{v.channel}</span>
+                    <span><Eye size={12} /> {v.views} views</span>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
         {videos.length === 0 && <p className="vid-empty">Add your first YouTube video from the admin page.</p>}
 
         {openVideo && (

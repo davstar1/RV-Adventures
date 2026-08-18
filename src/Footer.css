@@ -33,7 +33,7 @@
 /* Body */
 .footer-body {
   display: grid;
-  grid-template-columns: 1.6fr repeat(4, 1fr);
+  grid-template-columns: 1.6fr repeat(3, 1fr);
   gap: 48px;
   padding-top: 56px; padding-bottom: 56px;
 }
@@ -68,7 +68,7 @@
 
 @media (max-width: 1000px) {
   .footer-body { grid-template-columns: repeat(3,1fr); }
-  .footer-brand { grid-column: span 3; }
+  .footer-brand { grid-column: 1 / -1; }
 }
 @media (max-width: 640px) {
   .footer-body { grid-template-columns: repeat(2,1fr); }

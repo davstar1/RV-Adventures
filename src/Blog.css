@@ -495,10 +495,17 @@
   .story-modal { padding: 14px; }
   .story-modal-panel {
     grid-template-columns: 1fr;
-    grid-template-rows: minmax(240px, 44vh) minmax(240px, 1fr);
-    height: 92vh;
+    grid-template-rows: minmax(240px, 58dvh) minmax(0, 34dvh);
+    height: 92dvh;
+    transition: grid-template-rows .32s ease;
+  }
+  .story-modal-panel.is-caption-expanded {
+    grid-template-rows: minmax(140px, 24dvh) minmax(0, 68dvh);
   }
   .story-modal-copy {
-    padding: 22px 20px 24px;
+    overflow: hidden;
+    padding: 8px 20px 20px;
+    touch-action: pan-y;
   }
+  .story-modal-copy .caption-sheet-handle { display: flex; }
 }

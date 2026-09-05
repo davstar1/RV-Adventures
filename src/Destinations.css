@@ -251,11 +251,21 @@
   .dest-modal { padding: 14px; }
   .dest-modal-panel {
     grid-template-columns: 1fr;
-    grid-template-rows: minmax(260px, 48vh) minmax(220px, 1fr);
-    height: 92vh;
+    grid-template-rows: minmax(240px, 58dvh) minmax(0, 34dvh);
+    height: 92dvh;
+    transition: grid-template-rows .32s ease;
+  }
+  .dest-modal-panel.is-caption-expanded {
+    grid-template-rows: minmax(140px, 24dvh) minmax(0, 68dvh);
   }
   .dest-gallery-stage { height: 100%; }
   .dest-gallery-arrow { width: 40px; height: 40px; }
+  .dest-modal-copy {
+    overflow: hidden;
+    padding: 8px 20px 20px;
+    touch-action: pan-y;
+  }
+  .dest-modal-copy .caption-sheet-handle { display: flex; }
 }
 @media (max-width: 480px) {
   .dest-grid { grid-template-columns: 1fr; }

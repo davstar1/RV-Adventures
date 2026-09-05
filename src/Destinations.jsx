@@ -4,6 +4,7 @@ import { useContent, youtubeIdFromUrl } from './contentStore';
 import { resolveMediaUrl } from './mediaUrls';
 import PhotoComments from './PhotoComments';
 import PhotoLike from './PhotoLike';
+import useSwipeCaption from './useSwipeCaption';
 import './Destinations.css';
 
 function DestinationMedia({ item, name }) {
@@ -30,6 +31,7 @@ export default function Destinations() {
   const destinationsTitle = pageTitles[0]?.destinationsTitle || 'Places We’ve Explored';
   const [openDestination, setOpenDestination] = useState(null);
   const [photoIndex, setPhotoIndex] = useState(0);
+  const { captionExpanded, resetCaption, swipeHandlers, toggleCaption } = useSwipeCaption();
   const media = useMemo(() => {
     if (!openDestination) return [];
     return [
@@ -46,9 +48,13 @@ export default function Destinations() {
   const openGallery = destination => {
     setOpenDestination(destination);
     setPhotoIndex(0);
+    resetCaption();
   };
 
-  const closeGallery = () => setOpenDestination(null);
+  const closeGallery = () => {
+    setOpenDestination(null);
+    resetCaption();
+  };
   const showPrevious = () => setPhotoIndex(current => (current - 1 + media.length) % media.length);
   const showNext = () => setPhotoIndex(current => (current + 1) % media.length);
 
@@ -114,7 +120,7 @@ export default function Destinations() {
       {openDestination && (
         <div className="dest-modal" role="dialog" aria-modal="true" aria-label={`${openDestination.name} photos`}>
           <button className="dest-modal-backdrop" type="button" onClick={closeGallery} aria-label="Close destination gallery" />
-          <div className="dest-modal-panel">
+          <div className={`dest-modal-panel${captionExpanded ? ' is-caption-expanded' : ''}`}>
             <button className="dest-modal-close" type="button" onClick={closeGallery} aria-label="Close">
               <X size={20} />
             </button>
@@ -134,10 +140,19 @@ export default function Destinations() {
                 </button>
               )}
             </div>
-            <div className="dest-modal-copy">
+            <div className="dest-modal-copy" {...swipeHandlers}>
+              <button
+                type="button"
+                className="caption-sheet-handle"
+                onClick={toggleCaption}
+                aria-label={captionExpanded ? 'Collapse destination description' : 'Expand destination description'}
+                aria-expanded={captionExpanded}
+              >
+                <span />
+              </button>
               <span><Images size={15} /> {photoIndex + 1} of {media.length || 1}</span>
               <h3>{openDestination.name}</h3>
-              <div className="dest-modal-text">
+              <div className="dest-modal-text" data-caption-scroll>
                 {openDestination.description ? (
                   <p>{openDestination.description}</p>
                 ) : (

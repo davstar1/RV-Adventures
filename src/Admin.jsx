@@ -31,7 +31,7 @@ import {
   useContent,
   youtubeIdFromUrl,
 } from './contentStore';
-import { categories } from './data';
+import { categories, normalizeCategory } from './data';
 import {
   deleteMediaFromGitHub,
   getAdminSession,
@@ -1108,7 +1108,7 @@ function titleForEntry(entry) {
 }
 
 function metaForEntry(active, entry) {
-  if (isPostTab(active)) return `${entry.category || 'Story'} · ${entry.date || 'Draft'}`;
+  if (isPostTab(active)) return `${normalizeCategory(entry.category) || 'Story'} · ${entry.date || 'Draft'}`;
   if (active === 'videos') return `${entry.channel || 'Video'} · ${entry.duration || 'New'}`;
   if (active === 'destinations') return `${entry.count || 0} guides`;
   if (active === 'slides') return entry.caption || 'Home slideshow photo';
@@ -1173,7 +1173,7 @@ function formFromEntry(active, entry) {
 
     return {
       title: entry.title || '',
-      category: activeTabFor(active).category || entry.category || 'Destinations',
+      category: activeTabFor(active).category || normalizeCategory(entry.category) || 'Destinations',
       tag: entry.tag || '',
       excerpt: entry.excerpt || '',
       image: mainImage,

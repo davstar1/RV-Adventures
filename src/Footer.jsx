@@ -10,7 +10,7 @@ const links = {
   ],
   Read: [
     { label: 'Reviews & Guides', href: '#blog' },
-    { label: 'Favorite Campgrounds', href: '#blog' },
+    { label: 'Campground Guides & Reviews', href: '#blog' },
     { label: 'Gear We Use', href: '#gear' },
   ],
   Connect: [

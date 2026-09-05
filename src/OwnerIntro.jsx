@@ -4,6 +4,7 @@ import { useContent } from './contentStore';
 import { resolveMediaUrl } from './mediaUrls';
 import PhotoComments from './PhotoComments';
 import PhotoLike from './PhotoLike';
+import useSwipeCaption from './useSwipeCaption';
 import './OwnerIntro.css';
 
 function mediaFromProfile(profile) {
@@ -99,6 +100,7 @@ export default function OwnerIntro() {
   const [index, setIndex] = useState(0);
   const [modalOpen, setModalOpen] = useState(false);
   const [storyOpen, setStoryOpen] = useState(false);
+  const { captionExpanded, resetCaption, swipeHandlers, toggleCaption } = useSwipeCaption();
   const storyRef = useRef(null);
   const current = media[index];
 
@@ -106,7 +108,12 @@ export default function OwnerIntro() {
   const next = () => setIndex(currentIndex => (currentIndex + 1) % media.length);
   const openMedia = mediaIndex => {
     setIndex(mediaIndex);
+    resetCaption();
     setModalOpen(true);
+  };
+  const closeMedia = () => {
+    setModalOpen(false);
+    resetCaption();
   };
   const openStory = () => {
     setStoryOpen(true);
@@ -247,9 +254,9 @@ export default function OwnerIntro() {
 
       {modalOpen && current && (
         <div className="owner-modal" role="dialog" aria-modal="true" aria-label="About media viewer">
-          <button className="owner-modal-backdrop" type="button" onClick={() => setModalOpen(false)} aria-label="Close About media" />
-          <div className="owner-modal-panel">
-            <button className="owner-modal-close" type="button" onClick={() => setModalOpen(false)} aria-label="Close">
+          <button className="owner-modal-backdrop" type="button" onClick={closeMedia} aria-label="Close About media" />
+          <div className={`owner-modal-panel${captionExpanded ? ' is-caption-expanded' : ''}`}>
+            <button className="owner-modal-close" type="button" onClick={closeMedia} aria-label="Close">
               <X size={20} />
             </button>
             <div className="owner-modal-media">
@@ -268,9 +275,18 @@ export default function OwnerIntro() {
                 </>
               )}
             </div>
-            <div className="owner-modal-copy">
+            <div className="owner-modal-copy" {...swipeHandlers}>
+              <button
+                type="button"
+                className="caption-sheet-handle"
+                onClick={toggleCaption}
+                aria-label={captionExpanded ? 'Collapse photo description' : 'Expand photo description'}
+                aria-expanded={captionExpanded}
+              >
+                <span />
+              </button>
               <span className="eyebrow">About Us</span>
-              <div className="owner-modal-text">
+              <div className="owner-modal-text" data-caption-scroll>
                 <p>{current.description || 'Add a description for this photo or video in the About Us section of Admin.'}</p>
               </div>
               {current.type !== 'video' && (

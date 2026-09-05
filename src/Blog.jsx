@@ -1,17 +1,19 @@
 import { useEffect, useState } from 'react';
 import { Heart, MessageCircle, Clock, ArrowLeft, ArrowRight, X } from 'lucide-react';
-import { categories } from './data';
+import { categories, normalizeCategory } from './data';
 import { useContent, youtubeIdFromUrl } from './contentStore';
 import { resolveMediaUrl } from './mediaUrls';
 import NewsletterForm from './NewsletterForm';
 import PhotoComments from './PhotoComments';
 import PhotoLike from './PhotoLike';
+import useSwipeCaption from './useSwipeCaption';
 import './Blog.css';
 
 /* ── Post Card ── */
 function PostCard({ post, big = false, onOpen }) {
   const [liked, setLiked] = useState(false);
   const [count, setCount] = useState(post.likes);
+  const category = normalizeCategory(post.category);
 
   return (
     <article className={`card ${big ? 'card--big' : ''}`}>
@@ -20,10 +22,10 @@ function PostCard({ post, big = false, onOpen }) {
           {post.image ? (
             <img src={resolveMediaUrl(post.image)} alt={post.title} loading="lazy" decoding="async" />
           ) : (
-            <div className="card-img-empty">{post.category}</div>
+            <div className="card-img-empty">{category}</div>
           )}
           <div className="card-img-badges">
-            <span className="badge badge--cat">{post.category}</span>
+            <span className="badge badge--cat">{category}</span>
             {post.tag && (
               <span className={`badge badge--tag badge--${post.tag.toLowerCase()}`}>{post.tag}</span>
             )}
@@ -90,9 +92,10 @@ export default function Blog() {
   const [visibleCount, setVisibleCount] = useState(7);
   const [openPost, setOpenPost] = useState(null);
   const [photoIndex, setPhotoIndex] = useState(0);
+  const { captionExpanded, resetCaption, swipeHandlers, toggleCaption } = useSwipeCaption();
   const { posts, pageTitles } = useContent();
   const reviewsTitle = pageTitles[0]?.reviewsTitle || 'Reviews & Guides';
-  const filtered = active === 'All' ? posts : posts.filter(p => p.category === active);
+  const filtered = active === 'All' ? posts : posts.filter(p => normalizeCategory(p.category) === active);
   const openMedia = openPost ? [
     ...Array.from(new Set([
       openPost.image,
@@ -105,6 +108,11 @@ export default function Blog() {
   const openStory = post => {
     setOpenPost(post);
     setPhotoIndex(0);
+    resetCaption();
+  };
+  const closeStory = () => {
+    setOpenPost(null);
+    resetCaption();
   };
   const previousPhoto = () => setPhotoIndex(current => (current - 1 + openMedia.length) % openMedia.length);
   const nextPhoto = () => setPhotoIndex(current => (current + 1) % openMedia.length);
@@ -197,9 +205,9 @@ export default function Blog() {
 
       {openPost && (
         <div className="story-modal" role="dialog" aria-modal="true" aria-label={openPost.title}>
-          <button className="story-modal-backdrop" type="button" onClick={() => setOpenPost(null)} aria-label="Close story" />
-          <div className="story-modal-panel">
-            <button className="story-modal-close" type="button" onClick={() => setOpenPost(null)} aria-label="Close">
+          <button className="story-modal-backdrop" type="button" onClick={closeStory} aria-label="Close story" />
+          <div className={`story-modal-panel${captionExpanded ? ' is-caption-expanded' : ''}`}>
+            <button className="story-modal-close" type="button" onClick={closeStory} aria-label="Close">
               <X size={20} />
             </button>
             <div className="story-modal-image">
@@ -218,8 +226,17 @@ export default function Blog() {
                 </>
               )}
             </div>
-            <div className="story-modal-copy">
-              <span className="story-modal-kicker">{openPost.category}</span>
+            <div className="story-modal-copy" {...swipeHandlers}>
+              <button
+                type="button"
+                className="caption-sheet-handle"
+                onClick={toggleCaption}
+                aria-label={captionExpanded ? 'Collapse article description' : 'Expand article description'}
+                aria-expanded={captionExpanded}
+              >
+                <span />
+              </button>
+              <span className="story-modal-kicker">{normalizeCategory(openPost.category)}</span>
               <h3>{openPost.title}</h3>
               {openMedia.length > 1 && <span className="story-modal-photo-count">{photoIndex + 1} of {openMedia.length}</span>}
               <div className="story-modal-meta">
@@ -227,7 +244,7 @@ export default function Blog() {
                 <span>{openPost.date}</span>
                 <span><Clock size={13} /> {openPost.readTime}</span>
               </div>
-              <div className="story-modal-text">
+              <div className="story-modal-text" data-caption-scroll>
                 <p>{openPost.excerpt || 'Add more story text in Admin so visitors can read the full entry here.'}</p>
               </div>
               {openMedia[photoIndex]?.type === 'image' && (

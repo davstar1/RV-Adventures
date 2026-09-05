@@ -1,5 +1,6 @@
 import { ArrowRight, BookOpen, Clock, MapPin, PlayCircle } from 'lucide-react';
 import { useContent } from './contentStore';
+import { normalizeCategory } from './data';
 import { resolveMediaUrl } from './mediaUrls';
 import './HomeHighlights.css';
 
@@ -16,7 +17,7 @@ function StoryPreview({ post, compact = false }) {
         )}
       </div>
       <div className="home-story-copy">
-        <span className="home-story-category">{post.category || 'From the road'}</span>
+        <span className="home-story-category">{normalizeCategory(post.category) || 'From the road'}</span>
         <h3>{post.title}</h3>
         {!compact && <p>{post.excerpt}</p>}
         <span className="home-story-meta">

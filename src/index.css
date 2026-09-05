@@ -77,6 +77,37 @@ button { font-family: 'DM Sans', sans-serif; cursor: pointer; }
 }
 .btn-ghost:hover { border-color: var(--white); background: rgba(255,255,255,.1); }
 
+.caption-sheet-handle { display: none; }
+
+@media (max-width: 820px) {
+  .caption-sheet-handle {
+    width: 78px;
+    height: 28px;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    margin: -5px auto 6px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    touch-action: pan-y;
+  }
+
+  .caption-sheet-handle span {
+    width: 42px;
+    height: 4px;
+    border-radius: 4px;
+    background: rgba(255,255,255,.42);
+    transition: width .2s ease, background .2s ease;
+  }
+
+  .caption-sheet-handle:focus-visible span,
+  .caption-sheet-handle:hover span {
+    width: 50px;
+    background: var(--gold-lt);
+  }
+}
+
 @media (max-width: 600px) {
   .section-wrap { padding-right: 18px; padding-left: 18px; }
 }
